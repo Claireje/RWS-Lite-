@@ -1,0 +1,1017 @@
+/* ==========================================================================
+   M-RWS SYSTEM BASE SETUP & THEME VARIABLES
+   ========================================================================== */
+
+body { 
+    background-color: #0c1428; 
+    color: #e5e7eb; 
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Custom Glassmorphism Panels */
+.glass { 
+    background: rgba(15, 23, 42, 0.5); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 203, 5, 0.15); 
+    border-radius: 1.5rem;
+    padding: 2rem;
+}
+
+/* ==========================================================================
+   APP SIDEBAR FRAMEWORK
+   ========================================================================== */
+
+.app-sidebar {
+    width: 16rem;
+    background-color: #080d1a;
+    border-right: 1px solid rgba(30, 41, 59, 0.8);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 30;
+}
+
+.sidebar-branding {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-badge {
+    width: 2.25rem;
+    height: 2.25rem;
+    background-color: #ffcb05;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    font-weight: 900;
+    color: #0c1428;
+    font-size: 1.125rem;
+    box-shadow: 0 0 15px rgba(255, 203, 5, 0.3);
+}
+
+.branding-meta h1 {
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: #ffffff;
+    margin: 0;
+}
+
+.branding-meta span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.sidebar-nav {
+    flex: 1 1 0%;
+    padding: 1.25rem 0.75rem;
+    overflow-y: auto;
+}
+
+.nav-section-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    padding: 0 1rem 0.5rem 1rem;
+    margin: 0;
+}
+
+/* Sidebar Links & Buttons */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    text-decoration: none;
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.nav-link:hover {
+    color: #ffffff;
+    background-color: rgba(30, 41, 59, 0.4);
+}
+
+.nav-active { 
+    border-left: 3px solid #ffcb05; 
+    background: rgba(255, 203, 5, 0.05); 
+    color: #ffcb05; 
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.dropdown-chevron {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    transition: transform 0.2s ease;
+}
+
+/* Nested Station Submenus */
+.subnav-container {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 0.5rem;
+}
+
+.subnav-container a {
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.subnav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.subnav-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.subnav-link-active {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffcb05;
+    background-color: rgba(255, 255, 255, 0.05);
+    text-decoration: none;
+}
+
+.subnav-status {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.subnav-status.active-marker {
+    opacity: 0.4;
+    color: #94a3b8;
+}
+
+.subnav-status.live-marker {
+    color: #10b981;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(30, 41, 59, 0.6);
+    background-color: #060a14;
+}
+
+.sandbox-btn {
+    width: 100%;
+    padding: 0.625rem 0;
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border-radius: 0.75rem;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: all 0.2s;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    cursor: pointer;
+}
+
+.sandbox-btn:hover {
+    background-color: #334155;
+}
+
+/* ==========================================================================
+   MAIN CONTENT WORKSPACE FRAMEWORK
+   ========================================================================== */
+
+.main-viewport {
+    flex: 1 1 0%;
+    padding-left: 16rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Global Top Navigation Bar */
+.global-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 3.5rem;
+    background-color: rgba(12, 20, 40, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-scope-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    border-right: 1px solid #1e293b;
+    padding-right: 1rem;
+}
+
+.network-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    color: #34d399;
+    font-weight: 500;
+}
+
+.network-ping-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    background-color: #34d399;
+    border-radius: 59px;
+    animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.live-clock {
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: #64748b;
+}
+
+.local-weather-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid #1e293b;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.75rem;
+}
+
+.local-weather-pill .separator {
+    width: 0.25rem;
+    height: 0.25rem;
+    background-color: #334155;
+    border-radius: 9999px;
+}
+
+.local-weather-pill .temp-highlight {
+    color: #ffcb05;
+    font-weight: 700;
+}
+
+.login-btn {
+    padding: 0.5rem 1rem;
+    background-color: #ffcb05;
+    color: #0c1428;
+    font-size: 0.75rem;
+    font-weight: 900;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.login-btn:hover {
+    background-color: #e5b704;
+}
+
+/* ==========================================================================
+   MAIN SYSTEM WORKSPACE METRICS
+   ========================================================================== */
+
+.workspace-container {
+    flex: 1 1 0%;
+    padding: 2rem;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Hero Station Identity Graphic Strip */
+.station-hero-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2.5rem;
+    background-image: linear-gradient(rgba(10, 16, 32, 0.75), rgba(10, 16, 32, 0.85)), url('../public/images/umich-winter.jpg'); 
+    background-size: cover; 
+    background-position: center;
+}
+
+.hero-identity-block {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.hero-weather-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: rgba(10, 16, 32, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 1rem;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.hero-temp-readout {
+    font-size: 1.875rem;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.hero-condition-txt {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    margin-top: 0.125rem;
+}
+
+.hero-extremes-range {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    font-size: 10px;
+    font-family: monospace;
+    color: #94a3b8;
+}
+
+.hero-meta-titles h1 {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    color: #ffffff;
+    margin: 0;
+}
+
+.hero-meta-titles .subtitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffcb05;
+    margin-top: 0.125rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.hero-meta-titles .caption {
+    font-size: 10px;
+    color: #cbd5e1;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.hero-action-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background-color: rgba(10, 16, 32, 0.9);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.back-btn:hover {
+    background-color: #1e293b;
+}
+
+.banner-date-stamp {
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: 600;
+    color: #cbd5e1;
+    background-color: rgba(3, 7, 18, 0.4);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Data Layout Component Grid structures */
+.workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 2rem;
+}
+
+.primary-data-column {
+    grid-span: 8;
+    grid-column: span 8 / span 8;
+}
+
+.primary-data-column > * + * {
+    margin-top: 2rem;
+}
+
+.sidebar-data-column {
+    grid-span: 4;
+    grid-column: span 4 / span 4;
+}
+
+.sidebar-data-column > * + * {
+    margin-top: 1.5rem;
+}
+
+/* Consolidated Actions Control Strip */
+.control-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(15, 23, 42, 0.4);
+    padding: 1rem;
+    border: 1px solid #1e293b;
+    border-radius: 1rem;
+}
+
+.control-strip h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.control-strip p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0.125rem 0 0 0;
+}
+
+.export-btn {
+    padding: 0.625rem 1.25rem;
+    background-color: #059669;
+    color: #022c22;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.1);
+}
+
+.export-btn:hover {
+    background-color: #10b981;
+}
+
+/* Chart Canvas Presentation Wrappers */
+.metric-chart-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.metric-chart-card .icon-temp { color: #c084fc; }
+.metric-chart-card .icon-wind { color: #4ade80; }
+.metric-chart-card .icon-rain { color: #38bdf8; }
+
+.chart-layout-box {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.chart-canvas-wrapper {
+    grid-column: span 9 / span 9;
+}
+
+.chart-actions-panel {
+    grid-column: span 3 / span 3;
+    border-left: 1px solid #1e293b;
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    box-sizing: border-box;
+}
+
+.chart-actions-panel .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    display: block;
+    font-weight: 700;
+}
+
+.chart-actions-panel .panel-desc {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+    line-height: 1.5;
+}
+
+.view-report-btn {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.625rem 0;
+    background-color: rgba(147, 51, 234, 0.2);
+    color: #d8b4fe;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+.metric-chart-card:nth-of-type(2) .view-report-btn {
+    background-color: rgba(22, 163, 74, 0.2);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+.metric-chart-card:nth-of-type(3) .view-report-btn {
+    background-color: rgba(2, 132, 199, 0.2);
+    color: #7dd3fc;
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+.view-report-btn:hover {
+    background-color: rgba(147, 51, 234, 0.3);
+}
+.metric-chart-card:nth-of-type(2) .view-report-btn:hover { background-color: rgba(22, 163, 74, 0.3); }
+.metric-chart-card:nth-of-type(3) .view-report-btn:hover { background-color: rgba(2, 132, 199, 0.3); }
+
+/* Right Column Panels */
+.readout-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 203, 5, 0.15);
+    border-radius: 1.5rem;
+    padding: 2rem;
+}
+
+.readout-card .section-header {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin: 0 0 1.5rem 0;
+}
+
+.readout-item {
+    margin-bottom: 2rem;
+}
+.readout-item:last-child {
+    margin-bottom: 0;
+}
+
+.readout-value {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1;
+}
+.readout-value.val-temp { color: #c084fc; }
+.readout-value.val-wind { color: #4ade80; }
+.readout-value.val-rain { color: #38bdf8; }
+
+.readout-caption {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+}
+
+.camera-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.camera-card-header h3 {
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.live-feed-indicator {
+    background-color: #10b981;
+    color: #000000;
+    font-size: 9px;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.camera-viewport {
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: #020617;
+    border: 1px solid #1e293b;
+}
+
+.camera-image {
+    width: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    opacity: 0.8;
+    display: block;
+}
+
+/* Vector Graphic Components Inner Definitions */
+.icon-svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+}
+
+@keyframes spin-slow { 
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); } 
+}
+
+.sun-rays { 
+    animation: spin-slow 12s linear infinite; 
+    transform-origin: center; 
+}
+
+@keyframes ping {
+    75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+/* ==========================================================================
+   ANALYTICS PREVIEW REPORT SCREEN MODAL (PDF EMULATION)
+   ========================================================================== */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background-color: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-backdrop.hidden {
+    display: none !important;
+}
+
+.pdf-window-frame {
+    width: 100%;
+    max-width: 42rem;
+    background-color: #ffffff;
+    color: #0f172a;
+    border-radius: 1rem;
+    shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.pdf-toolbar {
+    background-color: #f1f5f9;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pdf-filename {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+.pdf-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.print-btn {
+    padding: 0.25rem 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.print-btn:hover {
+    background-color: #f8fafc;
+}
+
+.close-modal-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.close-modal-btn:hover {
+    background-color: #e2e8f0;
+}
+
+/* Inside the Simulated Paper Template */
+.pdf-document-body {
+    flex: 1 1 0%;
+    overflow-y: auto;
+    padding: 2.5rem;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+.pdf-header-strip {
+    border-bottom: 2px solid #1e293b;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.pdf-header-strip h2 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+    margin: 0;
+}
+
+.pdf-header-strip p {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    margin: 0.125rem 0 0 0;
+}
+
+.pdf-header-meta-right {
+    text-align: right;
+}
+
+.pdf-page-counter {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-family: monospace;
+}
+
+.pdf-generated-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 0.125rem;
+}
+
+.pdf-abstract-text {
+    font-size: 0.75rem;
+    color: #475569;
+    line-height: 1.625;
+    margin: 0 0 1.5rem 0;
+}
+
+.pdf-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.pdf-stat-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.pdf-stat-card .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    display: block;
+}
+
+.pdf-stat-card .value {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #334155;
+    margin-top: 0.25rem;
+}
+
+.pdf-table-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #1e293b;
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pdf-table-title span.subtitle {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: none;
+}
+
+.pdf-table-wrapper {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.pdf-data-table {
+    width: 100%;
+    text-align: left;
+    font-size: 0.75rem;
+    border-collapse: collapse;
+}
+
+.pdf-data-table th {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-weight: 700;
+    padding: 0.625rem 1rem;
+}
+
+.pdf-data-table th.col-mono {
+    font-family: monospace;
+}
+
+.pdf-data-table td {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-weight: 500;
+    color: #334155;
+}
+
+.pdf-data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pdf-data-table td.col-right {
+    text-align: right;
+}
+
+.pdf-footer-strip {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 10px;
+    font-weight: 500;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.05em;
+    font-family: monospace;
+}
+/* ==========================================================================
+   GLOBAL FOOTER FRAMEWORK
+   ========================================================================== */
+
+global-footer {
+    display: block;
+    width: 100%;
+    margin-top: auto; /* Pushes the footer to the absolute bottom of the viewport if content is short */
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(30, 41, 59, 0.4);
+    background-color: #080d1a;
+    box-sizing: border-box;
+}
+
+/* Structural styling for whatever internal layout you inject via footer.js */
+global-footer .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+global-footer a {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+global-footer a:hover {
+    color: #ffcb05; /* UMich Maize highlight on hover */
+}

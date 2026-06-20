@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RM 1962 Auxiliary Station - RWS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body class="min-h-screen flex flex-col">
+<div class="flex flex-1">
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-[#080d1a] border-r border-slate-800 flex flex-col fixed h-screen z-30">
+        <div class="p-5 border-b border-slate-800/60 flex items-center gap-3">
+            <div>
+                <img src="../icon/rwsmediumlogo.png">
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Research Weather</span>
+            </div>
+        </div>
+    <nav class="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+        <p class="text-[9px] font-bold uppercase tracking-widest text-slate-600 px-4 pb-2 pt-1">Stations</p>
+        <a href="index.html#overview"    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm"><span>📊</span> Overview</a>
+        <a href="index.html#conditions"  class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm"><span>🌤️</span> Current Conditions</a>
+        <div class="relative">
+            <button onclick="toggleRadiationsMenu()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-sm nav-active transition-all focus:outline-none">
+                <span class="flex items-center gap-3"><span>☢️</span> Radiations</span>
+                <svg id="radiation-chevron" class="w-4 h-4 transition-transform duration-200 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="radiations-submenu" class="mt-2 pl-4 pr-2 space-y-1">
+                <a href="cs-facility.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+                    <span>CS Facility Aux Station</span>
+                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain opacity-60">
+                </a>
+                <a href="basement.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+                    <span>Basement Aux Station</span>
+                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain opacity-60">
+                </a>
+                <a href="rm1962.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs font-bold text-[#ffcb05] bg-white/5">
+                    <span>Room 1962 Aux Station</span>
+                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain">
+                </a>
+            </div>
+        </div>
+        <a href="index.html#measures" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm"><span>🌱</span> What we measure</a>
+        <a href="index.html#news"     class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm"><span>📰</span> News &amp; Updates</a>
+        <a href="index.html#about"    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm"><span>ℹ️</span> About RWS</a>
+    </nav>
+</aside>
+
+<!-- MAIN COLUMN -->
+<div class="flex-1 pl-64 flex flex-col min-h-screen">
+
+    <header class="sticky top-0 z-20 h-14 bg-[#0c1428]/95 backdrop-blur-md border-b border-slate-800/80 px-8 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 border-r border-slate-800 pr-4">Public Environmental Observatory</span>
+            <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-xs text-emerald-400 font-medium">
+                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>Live Network Data
+            </div>
+            <span id="top-bar-clock" class="text-xs font-mono text-slate-500">--:--:--</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-xs font-medium text-slate-300 bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-xl">
+                <span>📍 Ann Arbor, MI</span><span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+                <span class="text-[#ffcb05] font-bold" id="nav-temp">71°F</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 p-8 max-w-[1600px] w-full mx-auto space-y-10">
+
+        <!-- HERO -->
+        <div class="flex items-center justify-between border-b border-slate-800/60 pb-6 p-6 rounded-2xl"
+             style="background-image:linear-gradient(rgba(10,16,32,0.75),rgba(10,16,32,0.85)),url('https://picsum.photos/id/1060/1600/400');background-size:cover;background-position:center">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4 bg-[#0a1020]/80 backdrop-blur-md border border-slate-700/50 rounded-2xl px-5 py-3">
+                    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                        <g class="sun-rays">
+                            <line x1="26" y1="2"  x2="26" y2="10" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="26" y1="42" x2="26" y2="50" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="2"  y1="26" x2="10" y2="26" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="42" y1="26" x2="50" y2="26" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="8.1"  y1="8.1"  x2="13.8" y2="13.8" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="38.2" y1="38.2" x2="43.9" y2="43.9" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="43.9" y1="8.1"  x2="38.2" y2="13.8" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="13.8" y1="38.2" x2="8.1"  y2="43.9" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                        </g>
+                        <circle cx="26" cy="26" r="10" fill="#ffcb05"/>
+                    </svg>
+                    <div>
+                        <div class="text-3xl font-black text-white leading-none" id="weather-temp">71</div>
+                        <div class="text-xs text-slate-300 mt-0.5">Controlled · Feels like <span id="weather-feels">71</span></div>
+                        <div class="flex gap-3 mt-1 text-[10px] text-slate-400 font-mono"><span>↑ <span id="weather-hi">74 F</span></span><span>↓ <span id="weather-lo">62 F</span></span></div>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black text-white">RM 1962 Auxiliary Station</h1>
+                    <p class="text-sm text-[#ffcb05] font-semibold mt-0.5">Indoor Main Lab · Ionizing Radiation &amp; Climate Analysis</p>
+                    <p class="text-[10px] text-slate-300 mt-1">University of Michigan — internal safety diagnostics &amp; nuclear baseline telemetry.</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <button onclick="window.location.href='index.html'" class="flex items-center gap-2 px-4 py-2.5 bg-[#0a1020]/90 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-all">← Back to Dashboard</button>
+                <span class="text-[10px] text-slate-400 font-mono" id="greeting-date">—</span>
+            </div>
+        </div>
+
+        <!-- DATA GRID -->
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-8 space-y-6">
+
+                <!-- Toolbar -->
+                <div class="flex items-center justify-between bg-slate-900/40 p-4 border border-slate-800 rounded-2xl">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Sensor Data Logs</h2>
+                        <p class="text-xs text-slate-400">
+                            Live from <code class="text-[#ffcb05] bg-slate-900 px-1 rounded text-[10px]">sensor_rm1962</code> · fields: indoor_temp, indoor_humidity, radon_level_nsv
+                        </p>
+                    </div>
+                    <button onclick="downloadAllCombinedCSV()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center gap-2">📦 Export CSV</button>
+                </div>
+
+                <!-- Indoor Temp -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">🌡️ Indoor Temperature <code class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">indoor_temp</code></h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-slate-500">Avg: <span id="avg-temp" class="text-purple-300 font-mono">—</span> °F</span>
+                            <button onclick="openReportPopup('temperature')" class="text-[11px] px-3 py-1.5 bg-[#0a1020] hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg font-medium">📥 View Report</button>
+                        </div>
+                    </div>
+                    <div class="h-[110px] mt-3"><canvas id="tempChart"></canvas></div>
+                    <p class="text-[10px] text-slate-600 mt-1">Dashed line = rolling session average</p>
+                </div>
+
+                <!-- Humidity -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">💧 Indoor Humidity <code class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">indoor_humidity</code></h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-slate-500">Avg: <span id="avg-humidity" class="text-cyan-300 font-mono">—</span> %</span>
+                            <button onclick="openReportPopup('humidity')" class="text-[11px] px-3 py-1.5 bg-[#0a1020] hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg font-medium">📥 View Report</button>
+                        </div>
+                    </div>
+                    <div class="h-[110px] mt-3"><canvas id="humidityChart"></canvas></div>
+                    <p class="text-[10px] text-slate-600 mt-1">Dashed line = rolling session average</p>
+                </div>
+
+                <!-- Radiation nSv/h -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">☢️ Ambient Radiation <code class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">radon_level_nsv</code></h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-slate-500">Avg: <span id="avg-radiation" class="text-emerald-300 font-mono">—</span> nSv/h</span>
+                            <button onclick="openReportPopup('radiation')" class="text-[11px] px-3 py-1.5 bg-[#0a1020] hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg font-medium">📥 View Report</button>
+                        </div>
+                    </div>
+                    <div class="h-[110px] mt-3"><canvas id="radiationChart"></canvas></div>
+                    <p class="text-[10px] text-slate-600 mt-1">Dashed line = rolling session average · Normal range 50–150 nSv/h</p>
+                </div>
+
+                <!-- Air Pressure -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">🔵 Air Pressure <code class="text-[10px] text-slate-500 font-mono bg-slate-900 px-1.5 py-0.5 rounded">indoor_pressure</code></h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-slate-500">Avg: <span id="avg-pressure" class="text-blue-300 font-mono">—</span> hPa</span>
+                            <button onclick="openReportPopup('pressure')" class="text-[11px] px-3 py-1.5 bg-[#0a1020] hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg font-medium">📥 View Report</button>
+                        </div>
+                    </div>
+                    <div class="h-[110px] mt-3"><canvas id="pressureChart"></canvas></div>
+                    <p class="text-[10px] text-slate-600 mt-1">Dashed line = rolling session average</p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="col-span-4 space-y-6">
+                <!-- Current Conditions -->
+                <div class="glass rounded-3xl p-8">
+                    <h3 class="uppercase text-xs tracking-widest text-slate-400 mb-6">Current Conditions</h3>
+                    <div class="space-y-5">
+                        <div><div class="text-5xl font-black text-purple-400" id="current-temp">--</div><div class="text-sm text-slate-400 mt-1">°F · Indoor Temp</div></div>
+                        <div class="h-px bg-slate-800"></div>
+                        <div><div class="text-5xl font-black text-cyan-400" id="current-humidity">--</div><div class="text-sm text-slate-400 mt-1">% · Humidity</div></div>
+                        <div class="h-px bg-slate-800"></div>
+                        <div><div class="text-5xl font-black text-emerald-400" id="current-radiation">--</div><div class="text-sm text-slate-400 mt-1">nSv/h · Radiation</div></div>
+                        <div class="h-px bg-slate-800"></div>
+                        <div><div class="text-5xl font-black text-blue-400" id="current-pressure">--</div><div class="text-sm text-slate-400 mt-1">hPa · Air Pressure</div></div>
+                    </div>
+                </div>
+                <!-- Station Info -->
+                <div class="bg-[#0a1020] border border-slate-800 rounded-2xl p-5">
+                    <h3 class="font-bold text-sm text-white mb-3">Station Info</h3>
+                    <div class="space-y-2 text-[11px]">
+                        <div class="flex justify-between"><span class="text-slate-400">DB Table</span><code class="text-[#ffcb05] font-mono">sensor_rm1962</code></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Location</span><span class="text-slate-200">Room 1962, Indoor</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Poll Rate</span><span class="text-slate-200">5s</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Instruments</span><span class="text-slate-200">BME680, DIYgm</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Status</span><span class="text-emerald-400 font-bold">● Online</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <global-footer></global-footer>
+</div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="report-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-slate-200">
+        <div class="bg-slate-100 px-6 py-3 border-b border-slate-200 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">MRWS_Data_Export_Preview.pdf</span>
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="px-3 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700">Print</button>
+                <button onclick="closeReportPopup()" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 font-bold">✕</button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-10 font-sans">
+            <div class="border-b-2 border-slate-800 pb-4 mb-6 flex justify-between items-start">
+                <div>
+                    <h2 class="text-xl font-black uppercase tracking-tight text-slate-900" id="modal-metric-title">—</h2>
+                    <p class="text-xs font-medium text-slate-500 mt-0.5">RM 1962 Auxiliary Station · Climate &amp; Radiation Analytics</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Page 1 of 1</div>
+                    <div class="text-[11px] font-semibold text-slate-500 mt-0.5" id="modal-generation-date">—</div>
+                </div>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed mb-4">Indoor environmental monitoring records for RM 1962. Values logged via BME680 environmental sensor and DIYgm Geiger counter at 5-second intervals.</p>
+            <div class="flex flex-wrap items-center gap-3 mb-6 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Filter by time</span>
+                <div class="flex items-center gap-1.5">
+                    <label class="text-[10px] text-slate-400 font-semibold">From</label>
+                    <input type="time" id="filter-from" class="text-xs border border-slate-200 rounded-lg px-2 py-1 text-slate-700 bg-white focus:outline-none focus:border-slate-400">
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <label class="text-[10px] text-slate-400 font-semibold">To</label>
+                    <input type="time" id="filter-to" class="text-xs border border-slate-200 rounded-lg px-2 py-1 text-slate-700 bg-white focus:outline-none focus:border-slate-400">
+                </div>
+                <button onclick="applyTimeFilter()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold rounded-lg transition-colors">Apply</button>
+                <button onclick="clearTimeFilter()" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-semibold rounded-lg transition-colors">Clear</button>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Current</span><div class="text-2xl font-black text-slate-800 mt-1" id="modal-stat-current">--</div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Min</span><div class="text-2xl font-black text-slate-800 mt-1" id="modal-stat-min">--</div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Max</span><div class="text-2xl font-black text-slate-800 mt-1" id="modal-stat-max">--</div></div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Average</span><div class="text-2xl font-black text-slate-800 mt-1" id="modal-stat-avg">--</div></div>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3 flex justify-between"><span>Historical Readings Ledger</span><span class="text-[10px] font-semibold text-slate-400 normal-case">Interval: 5s polling</span></h4>
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead><tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><th class="px-4 py-2.5 font-mono">#</th><th class="px-4 py-2.5">Date &amp; Time</th><th class="px-4 py-2.5 text-right">Value</th></tr></thead>
+                        <tbody id="modal-table-rows" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-10 pt-4 border-t border-slate-200 text-[10px] font-medium text-slate-400 flex justify-between tracking-wide font-mono">
+                <span>M-RWS MONITORING ENGINE V4.4</span><span>STATUS: NORMAL // VERIFIED DATA</span>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/footer.js"></script>
+<script src="js/station-manager.js"></script>
+</body>
+</html>
