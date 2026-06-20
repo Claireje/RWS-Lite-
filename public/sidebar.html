@@ -1,64 +1,66 @@
-<aside class="w-64 bg-[#080d1a] border-r border-slate-800 flex flex-col fixed h-screen z-30">
-    <div class="p-5 border-b border-slate-800/60 flex items-center gap-3">
-        <div class="w-9 h-9 bg-[#ffcb05] flex items-center justify-center rounded-xl font-black text-[#0c1428] text-lg">M</div>
+<link rel="stylesheet" href="../styles/sidebar.css">
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo-badge">M</div>
         <div>
-            <h1 class="font-black text-base leading-none text-white">RWS</h1>
-            <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Research Weather</span>
+            <h1 class="sidebar-brand-name">RWS</h1>
+            <span class="sidebar-brand-sub">Research Weather</span>
         </div>
     </div>
-    
-    <nav class="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-        <p class="text-[9px] font-bold uppercase tracking-widest text-slate-600 px-4 pb-2 pt-1">Stations</p>
-        
-        <a href="index.html#overview" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm">
+
+    <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Stations</p>
+
+        <a href="index.html#overview" class="sidebar-link">
             <span>📊</span> Overview
         </a>
-        
-        <a href="index.html#conditions" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm">
+
+        <a href="index.html#conditions" class="sidebar-link">
             <span>🌤️</span> Current Conditions
         </a>
-        
-        <div class="relative">
-            <button onclick="toggleRadiationsMenu()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-sm nav-active transition-all focus:outline-none">
-                <span class="flex items-center gap-3">
+
+        <div class="sidebar-dropdown">
+            <button onclick="toggleRadiationsMenu()" class="sidebar-dropdown-toggle nav-active">
+                <span class="sidebar-dropdown-label">
                     <span>☢️</span> Radiations
                 </span>
-                <svg id="radiation-chevron" class="w-4 h-4 transition-transform duration-200 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="radiation-chevron" class="sidebar-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            
-            <div id="radiations-submenu" class="mt-2 pl-4 pr-2 space-y-1">
-                <a href="cs-facility.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs font-bold text-[#ffcb05] bg-white/5 group">
+
+            <div id="radiations-submenu" class="sidebar-submenu">
+                <a href="cs-facility.html" class="sidebar-station-link active">
                     <span>CS Facility Aux Station</span>
-                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain brightness-125 group-hover:scale-110 transition-transform" />
+                    <img src="../icon/online.png" alt="Online" class="sidebar-station-icon" />
                 </a>
-                
-                <a href="basement.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors group">
+
+                <a href="basement.html" class="sidebar-station-link inactive">
                     <span>Basement Aux Station</span>
-                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                    <img src="../icon/online.png" alt="Online" class="sidebar-station-icon">
                 </a>
-                
-                <a href="rm1962.html" class="flex items-center justify-between px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 transition-colors group">
+
+                <a href="rm1962.html" class="sidebar-station-link inactive">
                     <span>Room 1962 Aux Station</span>
-                    <img src="../icon/online.png" alt="Online" class="w-4 h-4 object-contain opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                    <img src="../icon/online.png" alt="Online" class="sidebar-station-icon">
                 </a>
             </div>
         </div>
-        
-        <a href="index.html#measures" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm">
+
+        <a href="index.html#measures" class="sidebar-link">
             <span>🌱</span> What we measure
         </a>
-        <a href="index.html#news" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm">
+        <a href="index.html#news" class="sidebar-link">
             <span>📰</span> News &amp; Updates
         </a>
-        <a href="index.html#about" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-medium text-sm">
+        <a href="index.html#about" class="sidebar-link">
             <span>ℹ️</span> About RWS
         </a>
     </nav>
-    
-    <div class="p-4 border-t border-slate-800/60 bg-[#060a14]">
-        <button onclick="insertSampleData()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold tracking-wide transition-all border border-slate-700/50">
+
+    <div class="sidebar-footer">
+        <button onclick="insertSampleData()" class="sidebar-inject-btn">
             ⚡ Inject Sandbox Data
         </button>
     </div>

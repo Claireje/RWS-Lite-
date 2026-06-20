@@ -1,0 +1,216 @@
+.sidebar {
+  width: 16rem;
+  background-color: #080d1a;
+  border-right: 1px solid rgb(30 41 59);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 30;
+}
+
+.sidebar-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-logo-badge {
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: #ffcb05;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 900;
+  color: #0c1428;
+  font-size: 1.125rem;
+}
+
+.sidebar-brand-name {
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1;
+  color: #ffffff;
+  margin: 0;
+}
+
+.sidebar-brand-sub {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgb(148 163 184);
+  font-weight: 700;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0.75rem 0.75rem 1.25rem;
+  overflow-y: auto;
+}
+
+.sidebar-nav > * + * {
+  margin-top: 0.125rem;
+}
+
+.sidebar-section-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgb(71 85 105);
+  padding: 0.25rem 1rem 0.5rem;
+  display: block;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  color: rgb(148 163 184);
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.sidebar-link:hover {
+  color: #ffffff;
+  background-color: rgba(30, 41, 59, 0.4);
+}
+
+.sidebar-link-active,
+.nav-active {
+  color: #ffffff;
+  background-color: rgba(30, 41, 59, 0.4);
+}
+
+.sidebar-dropdown {
+  position: relative;
+}
+
+.sidebar-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+  outline: none;
+}
+
+.sidebar-dropdown-toggle:focus {
+  outline: none;
+}
+
+.sidebar-dropdown-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sidebar-chevron {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s;
+  transform: rotate(180deg);
+}
+
+.sidebar-chevron.collapsed {
+  transform: rotate(0deg);
+}
+
+.sidebar-submenu {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 0.5rem;
+}
+
+.sidebar-submenu > * + * {
+  margin-top: 0.25rem;
+}
+
+.sidebar-station-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.sidebar-station-link.active {
+  color: #ffcb05;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-station-link.inactive {
+  color: rgb(148 163 184);
+}
+
+.sidebar-station-link.inactive:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-station-icon {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.sidebar-station-link.active .sidebar-station-icon {
+  filter: brightness(1.25);
+}
+
+.sidebar-station-link.active:hover .sidebar-station-icon {
+  transform: scale(1.1);
+}
+
+.sidebar-station-link.inactive .sidebar-station-icon {
+  opacity: 0.6;
+}
+
+.sidebar-station-link.inactive:hover .sidebar-station-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(30, 41, 59, 0.6);
+  background-color: #060a14;
+}
+
+.sidebar-inject-btn {
+  width: 100%;
+  padding: 0.625rem 0;
+  background-color: rgb(30 41 59);
+  color: rgb(203 213 225);
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.sidebar-inject-btn:hover {
+  background-color: rgb(51 65 85);
+}
