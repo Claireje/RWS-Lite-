@@ -1,6 +1,6 @@
 /**
- * RWS Station Manager Engine (Enhanced Native Overlay Edition)
- * Fully handles Basement, CS Facility, and Room 1962.
+ * RWS Station Manager
+ * handles Basement, CS Facility, and Room 1962 dashboards off one shared script
  */
 
 let history = { radon: [], temperature: [], moisture: [], soiltemp: [], wind: [], rainfall: [], solar: [], humidity: [], radiation: [], pressure: [] };
@@ -8,50 +8,47 @@ let instances = {};
 let activeMetric = null;
 let currentStation = 'unknown';
 const MAX_PTS = 30;
-const HISTORY_INTERVAL_MS = 10 * 60 * 1000; // log one reading per 10 minutes
+const HISTORY_INTERVAL_MS = 10 * 60 * 1000; // log one reading per 10 min into the long-term history buffer
 let lastHistoryLogTime = 0;
 
-// ── Native Chart.js Custom Average Baseline Plugin ──
+// draws a dashed average line over whatever chart it's attached to
+// using afterDatasetsDraw so it sits on top of the fill instead of getting drawn under it
 const avgBaselinePlugin = {
     id: 'avgBaseline',
-    // Swapping to afterDatasetsDraw ensures the baseline overlays smoothly ON TOP of trend fills
     afterDatasetsDraw(chart) {
         const data = chart.data.datasets[0]?.data || [];
         if (!data.length) return;
-        
-        // Compute precise current numerical baseline point average
+
         const avg = data.reduce((a, b) => a + b, 0) / data.length;
         const { ctx, chartArea: { left, right }, scales: { y } } = chart;
         const yPos = y.getPixelForValue(avg);
-        
-        // Bounds-check protection to stop line from spilling into outer labels/margins
+
+        // don't draw it if the average happens to land outside the visible chart area
         if (yPos < chart.chartArea.top || yPos > chart.chartArea.bottom) return;
-        
+
         ctx.save();
-        // Crisp semitransparent baseline stroke configuration
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]); // Clean dashed baseline rhythm 
-        
-        ctx.beginPath(); 
-        ctx.moveTo(left, yPos); 
-        ctx.lineTo(right, yPos); 
+        ctx.setLineDash([6, 4]);
+
+        ctx.beginPath();
+        ctx.moveTo(left, yPos);
+        ctx.lineTo(right, yPos);
         ctx.stroke();
-        
-        // Text Tag Details overlay rendering configuration
+
         ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.font = 'bold 9px monospace, system-ui';
         ctx.textAlign = 'right';
-        
-        // Dynamically shift text below the line if it gets too close to the chart ceiling
+
+        // flip the label below the line if the line is too close to the top edge, otherwise it gets clipped
         const yOffset = (yPos - chart.chartArea.top < 15) ? 12 : -5;
         ctx.fillText('AVG ' + avg.toFixed(avg > 10 ? 1 : 2), right - 6, yPos + yOffset);
-        
+
         ctx.restore();
     }
 };
 
-// ── Shared UI Management ──
+// clock + date stuff shared across all three station pages
 function initClockAndDates() {
     setInterval(() => {
         const el = document.getElementById('top-bar-clock');
@@ -68,16 +65,12 @@ function initClockAndDates() {
 function toggleRadiationsMenu() {
     const submenu = document.getElementById('radiations-submenu');
     const chevron = document.getElementById('radiation-chevron');
-    
-    if (submenu) {
-        submenu.classList.toggle('hidden');
-    }
-    if (chevron) {
-        chevron.classList.toggle('rotate-180');
-    }
+
+    if (submenu) submenu.classList.toggle('hidden');
+    if (chevron) chevron.classList.toggle('rotate-180');
 }
 
-// ── Master Stations Matrix Configuration ──
+// one config object per station, this is what makes the rest of the file station-agnostic
 const STATIONS_CONFIG = {
     'basement': {
         apiEndpoint: '/api/insert-sample',
@@ -117,6 +110,7 @@ const STATIONS_CONFIG = {
             set('current-moisture', Number(sensor.soil_moisture ?? 32.5).toFixed(1));
             set('current-soiltemp', Number(sensor.soil_temperature ?? 54).toFixed(1));
 
+            // EPA action level is 4.0 pCi/L, 2.0 is just our own "keep an eye on it" threshold
             const radonStatusEl = document.getElementById('radon-status-text');
             if (radonStatusEl) {
                 radonStatusEl.textContent = radon >= 4.0 ? 'ACTION REQUIRED' : radon >= 2.0 ? 'Monitor' : 'Safe';
@@ -181,7 +175,7 @@ const STATIONS_CONFIG = {
     }
 };
 
-// ── Core Operational Loops ──
+// builds one chart per metric for whichever station config is active
 function buildChart(key, m) {
     const ctx = document.getElementById(m.canvas);
     if (!ctx) return;
@@ -191,7 +185,7 @@ function buildChart(key, m) {
         options: {
             responsive: true, maintainAspectRatio: false, animation: false,
             layout: {
-                padding: { top: 12, bottom: 4 } // Provides tiny breathing room for text bounds labels
+                padding: { top: 12, bottom: 4 } // a little room so the avg label doesn't get clipped at the top
             },
             plugins: { legend: { display: false } },
             scales: {
@@ -209,7 +203,7 @@ async function fetchAndUpdate() {
 
     let sensor;
     try {
-        const res = await fetch('/api/live-data');
+        const res = await fetch(`/api/live-data.php?station=${currentStation}`);
         sensor = (await res.json()).data;
     } catch (_) {
         sensor = config.generateFallbackData();
@@ -221,6 +215,8 @@ async function fetchAndUpdate() {
     const ts = readingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     const keys = Object.keys(config.metrics);
+    // using the first metric's chart as a "did we already log this exact timestamp" guard
+    // assumes keys[0] always has a real chart instance on the page, which holds for all 3 stations today
     const checkInst = instances[keys[0]];
     if (!checkInst || !checkInst.data.labels.length || checkInst.data.labels[checkInst.data.labels.length - 1] !== ts) {
         keys.forEach(key => {
@@ -233,6 +229,11 @@ async function fetchAndUpdate() {
             inst.data.datasets[0].data.push(val);
 
             if (inst.data.labels.length > MAX_PTS) { inst.data.labels.shift(); inst.data.datasets[0].data.shift(); }
+
+            // NOTE: history buffer also gets capped at MAX_PTS (30), same as the live chart.
+            // since this only logs once every 10 min, that's a 5 hour window total before old
+            // entries start getting dropped from the report modal. if the report is meant to
+            // cover a full day, this cap is too aggressive and should probably be its own constant.
             if (readingTime.getTime() - lastHistoryLogTime >= HISTORY_INTERVAL_MS) {
                 history[key].push({ ts, val, t: readingTime.getTime() });
                 if (history[key].length > MAX_PTS) history[key].shift();
@@ -243,10 +244,8 @@ async function fetchAndUpdate() {
             const avgEl = document.getElementById(m.avgId);
             if (avgEl) avgEl.textContent = avg.toFixed(m.dec);
 
-            // FIX: Use default update mode or custom configurations to force clear custom canvas strokes
-            inst.update(); 
+            inst.update();
         });
-        // Advance the history log timer after all keys are processed
         if (readingTime.getTime() - lastHistoryLogTime >= HISTORY_INTERVAL_MS) {
             lastHistoryLogTime = readingTime.getTime();
         }
@@ -254,14 +253,17 @@ async function fetchAndUpdate() {
     }
 }
 
-// ── Window Bindings ──
-
-// Returns history entries filtered by the current time range inputs
+// returns history entries inside the from/to time window from the modal inputs
+// NOTE: from/to are plain "HH:MM" strings compared as text, with no date attached.
+// this works fine within a single day but breaks in two ways if history spans multiple days:
+//   1. a range crossing midnight (e.g. 22:00 to 02:00) returns nothing, since "22:00" > "02:00" as strings
+//   2. there's no actual date filter, so the same time-of-day from two different days both pass
+// fine as-is if the report never needs to span more than ~5 hours of history (see cap above), just flagging
 function getFilteredHistory(metric) {
     const hist = history[metric] || [];
     const fromEl = document.getElementById('filter-from');
     const toEl   = document.getElementById('filter-to');
-    const from   = fromEl?.value; // "HH:MM"
+    const from   = fromEl?.value;
     const to     = toEl?.value;
     if (!from && !to) return hist;
     return hist.filter(h => {
@@ -273,7 +275,7 @@ function getFilteredHistory(metric) {
     });
 }
 
-// Re-renders the stats row and table using the current filter
+// rebuilds the stat row + table for the report modal using whatever filter is active
 function renderReportTable(metric) {
     const config = STATIONS_CONFIG[currentStation];
     if (!config || !config.metrics[metric]) return;
@@ -306,7 +308,7 @@ function openReportPopup(metric) {
     const titleEl = document.getElementById('modal-metric-title');
     if (titleEl) titleEl.textContent = config.metrics[metric].label;
 
-    // Pre-fill time range with the bounds of available data
+    // prefill the time range to match whatever data we've actually got, so it's not empty by default
     const hist = history[metric] || [];
     if (hist.length) {
         const fromEl = document.getElementById('filter-from');
@@ -368,7 +370,8 @@ async function insertSampleData() {
     }
 }
 
-// ── Startup Context Bootstrapper ──
+// figures out which station page we're on, either from a data attribute on the script tag
+// or by checking which chart canvases actually exist on the page
 document.addEventListener('DOMContentLoaded', () => {
     initClockAndDates();
 
@@ -385,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!config) return;
 
     Object.entries(config.metrics).forEach(([k, m]) => buildChart(k, m));
-    
+
     const modal = document.getElementById('report-modal');
     if (modal) modal.addEventListener('click', function (e) { if (e.target === this) closeReportPopup(); });
 

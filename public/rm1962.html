@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../styles/styles.css">
     <link rel="stylesheet" href="../styles/sidebar.css">
     <link rel="stylesheet" href="../styles/rm1962.css">
+    <link rel="stylesheet" href="../styles/footer.css">
 </head>
 <body>
 
@@ -100,18 +101,18 @@
             <div class="hero-identity-block">
 
                 <div class="hero-weather-summary">
-                    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                    <svg class="hero-sun-svg" viewBox="0 0 52 52">
                         <g class="sun-rays">
-                            <line x1="26" y1="2"  x2="26" y2="10" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="26" y1="42" x2="26" y2="50" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="2"  y1="26" x2="10" y2="26" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="42" y1="26" x2="50" y2="26" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="8.1"  y1="8.1"  x2="13.8" y2="13.8" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="38.2" y1="38.2" x2="43.9" y2="43.9" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="43.9" y1="8.1"  x2="38.2" y2="13.8" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
-                            <line x1="13.8" y1="38.2" x2="8.1"  y2="43.9" stroke="#ffcb05" stroke-width="2.5" stroke-linecap="round"/>
+                            <line class="sun-ray" x1="26" y1="2"  x2="26" y2="10"/>
+                            <line class="sun-ray" x1="26" y1="42" x2="26" y2="50"/>
+                            <line class="sun-ray" x1="2"  y1="26" x2="10" y2="26"/>
+                            <line class="sun-ray" x1="42" y1="26" x2="50" y2="26"/>
+                            <line class="sun-ray" x1="8.1"  y1="8.1"  x2="13.8" y2="13.8"/>
+                            <line class="sun-ray" x1="38.2" y1="38.2" x2="43.9" y2="43.9"/>
+                            <line class="sun-ray" x1="43.9" y1="8.1"  x2="38.2" y2="13.8"/>
+                            <line class="sun-ray" x1="13.8" y1="38.2" x2="8.1"  y2="43.9"/>
                         </g>
-                        <circle cx="26" cy="26" r="10" fill="#ffcb05"/>
+                        <circle class="sun-core" cx="26" cy="26" r="10"/>
                     </svg>
                     <div>
                         <div class="hero-temp-readout" id="weather-temp">71</div>
@@ -146,7 +147,7 @@
                 <div class="control-strip">
                     <div>
                         <h2>Sensor Data Logs</h2>
-                        <p>Live from <code class="sensor-code">sensor_rm1962</code> · fields: indoor_temp, indoor_humidity, radon_level_nsv</p>
+                        <p>Live from <code class="sensor-code">sensor_rm1962</code></p>
                     </div>
                     <button onclick="downloadAllCombinedCSV()" class="export-btn">📦 Export CSV</button>
                 </div>
@@ -318,11 +319,6 @@
                 </div>
             </div>
 
-            <p class="pdf-abstract-text">
-                Indoor environmental monitoring records for RM 1962. Values logged via BME680
-                environmental sensor and DIYgm Geiger counter at 5-second intervals.
-            </p>
-
             <div class="filter-bar">
                 <span class="filter-bar-label">Filter by time</span>
                 <div class="filter-group">
@@ -373,11 +369,6 @@
                         <tbody id="modal-table-rows"></tbody>
                     </table>
                 </div>
-            </div>
-
-            <div class="pdf-footer-strip">
-                <span>M-RWS MONITORING ENGINE V4.4</span>
-                <span>STATUS: NORMAL // VERIFIED DATA</span>
             </div>
 
         </div>

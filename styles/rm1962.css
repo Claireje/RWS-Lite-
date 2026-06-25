@@ -27,7 +27,7 @@
 
 .sensor-code {
     font-size: 0.625rem;
-    color: #64748b;
+    color: #ffcb05;
     font-family: monospace;
     background-color: #0f172a;
     padding: 0.125rem 0.375rem;
@@ -114,8 +114,8 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding: 0.75rem 1rem;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: #001a36;
+    border: 1px solid rgba(255, 203, 5, 0.15);
     border-radius: 0.75rem;
 }
 
@@ -124,7 +124,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #64748b;
+    color: #475569;
 }
 
 .filter-group {
@@ -135,28 +135,28 @@
 
 .filter-input-label {
     font-size: 0.625rem;
-    color: #94a3b8;
+    color: #64748b;
     font-weight: 600;
 }
 
 .filter-input {
     font-size: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #334155;
     border-radius: 0.5rem;
     padding: 0.25rem 0.5rem;
-    color: #334155;
-    background-color: #ffffff;
+    color: #cbd5e1;
+    background-color: #1e293b;
     outline: none;
 }
 
 .filter-input:focus {
-    border-color: #94a3b8;
+    border-color: #475569;
 }
 
 .filter-apply-btn {
     padding: 0.25rem 0.75rem;
-    background-color: #1e293b;
-    color: #ffffff;
+    background-color: #ffcb05;
+    color: #0c1428;
     font-size: 0.6875rem;
     font-weight: 700;
     border: none;
@@ -165,24 +165,40 @@
     transition: background-color 0.15s;
 }
 
-.filter-apply-btn:hover { background-color: #334155; }
+.filter-apply-btn:hover { background-color: #e5b704; }
 
 .filter-clear-btn {
     padding: 0.25rem 0.75rem;
-    background-color: #ffffff;
+    background-color: transparent;
     color: #64748b;
     font-size: 0.6875rem;
     font-weight: 600;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #334155;
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background-color 0.15s;
 }
 
-.filter-clear-btn:hover { background-color: #f1f5f9; }
+.filter-clear-btn:hover { background-color: #1e293b; }
+
+.hero-sun-svg {
+    width: 52px;
+    height: 52px;
+    fill: none;
+}
+
+.sun-ray {
+    stroke: #ffcb05;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.sun-core {
+    fill: #ffcb05;
+}
 
 .rm1962-hero {
-    background-image: linear-gradient(rgba(10,16,32,0.75), rgba(10,16,32,0.85)), url('https://picsum.photos/id/1060/1600/400');
+    background-image: linear-gradient(rgba(10,16,32,0.75), rgba(10,16,32,0.85)), url('../public/images/ners_indoor.jpg');
     background-size: cover;
     background-position: center;
 }

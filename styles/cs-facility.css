@@ -1,0 +1,77 @@
+.cs-hero {
+    background-image: linear-gradient(rgba(10,16,32,0.75), rgba(10,16,32,0.85)), url('images/umich-winter.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-sun-svg {
+    width: 52px;
+    height: 52px;
+    fill: none;
+}
+
+.sun-ray {
+    stroke: #ffcb05;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.sun-core {
+    fill: #ffcb05;
+}
+
+.val-wind  { color: #34d399; }
+.val-rain  { color: #38bdf8; }
+.val-solar { color: #fbbf24; }
+
+.avg-wind-val  { color: #6ee7b7; font-family: monospace; }
+.avg-rain-val  { color: #7dd3fc; font-family: monospace; }
+.avg-solar-val { color: #fcd34d; font-family: monospace; }
+
+.camera-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.camera-card-title {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.camera-live-badge {
+    background-color: #10b981;
+    color: #000000;
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.camera-viewport {
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: #020617;
+    border: 1px solid #1e293b;
+}
+
+.camera-img {
+    width: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    opacity: 0.8;
+    display: block;
+}
+
+.camera-note {
+    font-size: 0.625rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+}

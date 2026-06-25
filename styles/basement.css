@@ -1,0 +1,28 @@
+.hero-sun-svg {
+    width: 52px;
+    height: 52px;
+    fill: none;
+}
+
+.sun-ray {
+    stroke: #ffcb05;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.sun-core {
+    fill: #ffcb05;
+}
+
+.basement-hero {
+    background-image: linear-gradient(rgba(10,16,32,0.75), rgba(10,16,32,0.88)), url('../public/images/umich-autumn.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.val-radon    { color: #fb7185; }
+.val-soiltemp { color: #fbbf24; }
+
+.avg-radon-val    { color: #fda4af; font-family: monospace; }
+.avg-moisture-val { color: #6ee7b7; font-family: monospace; }
+.avg-soiltemp-val { color: #fcd34d; font-family: monospace; }
