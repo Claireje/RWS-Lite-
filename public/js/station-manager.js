@@ -1,6 +1,6 @@
 /**
  * RWS Station Manager
- * handles Basement, CS Facility, and Room 1962 dashboards off one shared script
+ * Shared script for the Basement, CS Facility, and Room 1962 dashboard pages.
  */
 
 let history = { radon: [], temperature: [], moisture: [], soiltemp: [], wind: [], rainfall: [], solar: [], humidity: [], radiation: [], pressure: [] };
@@ -8,47 +8,48 @@ let instances = {};
 let activeMetric = null;
 let currentStation = 'unknown';
 const MAX_PTS = 30;
-const HISTORY_INTERVAL_MS = 10 * 60 * 1000; // log one reading per 10 min into the long-term history buffer
+const HISTORY_INTERVAL_MS = 10 * 60 * 1000; // log one reading every 10 minutes
 let lastHistoryLogTime = 0;
 
-// draws a dashed average line over whatever chart it's attached to
-// using afterDatasetsDraw so it sits on top of the fill instead of getting drawn under it
+// Custom Chart.js plugin that draws a dashed average line across each chart
 const avgBaselinePlugin = {
     id: 'avgBaseline',
     afterDatasetsDraw(chart) {
+        // grab the chart's data points, bail if empty
         const data = chart.data.datasets[0]?.data || [];
         if (!data.length) return;
 
+        // calculate the average of all visible data points
         const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        // pull out the canvas context, left/right edges, and y-axis
         const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+        // convert the average value into a pixel position on the y-axis
         const yPos = y.getPixelForValue(avg);
 
-        // don't draw it if the average happens to land outside the visible chart area
+        // skip drawing if the line would land outside the chart area
         if (yPos < chart.chartArea.top || yPos > chart.chartArea.bottom) return;
 
         ctx.save();
+        // style the dashed line
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
         ctx.lineWidth = 1.5;
         ctx.setLineDash([6, 4]);
 
+        // draw the line from left edge to right edge
         ctx.beginPath();
         ctx.moveTo(left, yPos);
         ctx.lineTo(right, yPos);
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = 'bold 9px monospace, system-ui';
-        ctx.textAlign = 'right';
-
-        // flip the label below the line if the line is too close to the top edge, otherwise it gets clipped
         const yOffset = (yPos - chart.chartArea.top < 15) ? 12 : -5;
         ctx.fillText('AVG ' + avg.toFixed(avg > 10 ? 1 : 2), right - 6, yPos + yOffset);
 
+        // put the canvas style back to what it was before
         ctx.restore();
     }
 };
 
-// clock + date stuff shared across all three station pages
+// updates the clock every second and fills in today's date on the page
 function initClockAndDates() {
     setInterval(() => {
         const el = document.getElementById('top-bar-clock');
@@ -62,18 +63,17 @@ function initClockAndDates() {
     if (md) md.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+// shows/hides the radiations dropdown and spins the arrow
 function toggleRadiationsMenu() {
     const submenu = document.getElementById('radiations-submenu');
     const chevron = document.getElementById('radiation-chevron');
-
     if (submenu) submenu.classList.toggle('hidden');
     if (chevron) chevron.classList.toggle('rotate-180');
 }
 
-// one config object per station, this is what makes the rest of the file station-agnostic
+// Each station has its own config object so the rest of the script stays station-agnostic
 const STATIONS_CONFIG = {
     'basement': {
-        apiEndpoint: '/api/insert-sample',
         exportFilename: () => `RWS_Basement_${new Date().toISOString().slice(0, 10)}.csv`,
         csvHeaders: ['Timestamp', 'Radon (pCi/L)', 'Temp (°F)', 'Soil Moisture (%)', 'Soil Temp (°F)'],
         csvRowMapping: (i) => [
@@ -82,45 +82,44 @@ const STATIONS_CONFIG = {
             history.soiltemp[i]?.val?.toFixed(1) || ''
         ],
         metrics: {
-            radon: { canvas: 'radonChart', color: '#fb7185', label: 'Radon Concentration', dec: 2, unit: ' pCi/L', avgId: 'avg-radon' },
-            temperature: { canvas: 'tempChart', color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F', avgId: 'avg-temp' },
-            moisture: { canvas: 'moistureChart', color: '#4ade80', label: 'Soil Moisture', dec: 1, unit: '%', avgId: 'avg-moisture' },
-            soiltemp: { canvas: 'soiltempChart', color: '#fbbf24', label: 'Soil Temperature', dec: 1, unit: '°F', avgId: 'avg-soiltemp' }
+            radon:       { canvas: 'radonChart',    color: '#fb7185', label: 'Radon Concentration', dec: 2, unit: ' pCi/L', avgId: 'avg-radon' },
+            temperature: { canvas: 'tempChart',     color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F',     avgId: 'avg-temp' },
+            moisture:    { canvas: 'moistureChart', color: '#4ade80', label: 'Soil Moisture',        dec: 1, unit: '%',      avgId: 'avg-moisture' },
+            soiltemp:    { canvas: 'soiltempChart', color: '#fbbf24', label: 'Soil Temperature',     dec: 1, unit: '°F',    avgId: 'avg-soiltemp' }
         },
         generateFallbackData: () => ({
-            radon_level: 1.2 + (Math.random() * 0.4 - 0.2),
-            indoor_temp: 54.0 + (Math.random() * 2 - 1),
-            soil_moisture: 32.5 + (Math.random() * 3 - 1.5),
+            radon_level:      1.2  + (Math.random() * 0.4 - 0.2),
+            indoor_temp:      54.0 + (Math.random() * 2 - 1),
+            soil_moisture:    32.5 + (Math.random() * 3 - 1.5),
             soil_temperature: 54.0 + (Math.random() * 2 - 1),
             timestamp: new Date().toISOString()
         }),
         updateUI: (sensor) => {
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             const t = Number(sensor.indoor_temp ?? 54);
-            set('weather-temp', t.toFixed(0));
+            set('weather-temp',  t.toFixed(0));
             set('weather-feels', t.toFixed(0));
-            set('weather-hi', (t + 4).toFixed(0) + ' F');
-            set('weather-lo', (t - 5).toFixed(0) + ' F');
-            set('nav-temp', t.toFixed(0) + '°F');
+            set('weather-hi',    (t + 4).toFixed(0) + ' F');
+            set('weather-lo',    (t - 5).toFixed(0) + ' F');
+            set('nav-temp',      t.toFixed(0) + '°F');
 
             const radon = sensor.radon_level ?? 1.2;
-            set('current-radon', radon.toFixed(2));
-            set('radon-card-val', radon.toFixed(2) + ' pCi/L');
-            set('current-temp', t.toFixed(1));
+            set('current-radon',   radon.toFixed(2));
+            set('radon-card-val',  radon.toFixed(2) + ' pCi/L');
+            set('current-temp',    t.toFixed(1));
             set('current-moisture', Number(sensor.soil_moisture ?? 32.5).toFixed(1));
             set('current-soiltemp', Number(sensor.soil_temperature ?? 54).toFixed(1));
 
-            // EPA action level is 4.0 pCi/L, 2.0 is just our own "keep an eye on it" threshold
+            // EPA action level is 4.0 pCi/L
             const radonStatusEl = document.getElementById('radon-status-text');
             if (radonStatusEl) {
                 radonStatusEl.textContent = radon >= 4.0 ? 'ACTION REQUIRED' : radon >= 2.0 ? 'Monitor' : 'Safe';
-                radonStatusEl.className = radon >= 4.0 ? 'text-2xl font-black text-rose-400' : radon >= 2.0 ? 'text-2xl font-black text-amber-400' : 'text-2xl font-black text-[#22c55e]';
+                radonStatusEl.className   = radon >= 4.0 ? 'text-2xl font-black text-rose-400' : radon >= 2.0 ? 'text-2xl font-black text-amber-400' : 'text-2xl font-black text-[#22c55e]';
             }
             return { radon: sensor.radon_level, temperature: sensor.indoor_temp, moisture: sensor.soil_moisture, soiltemp: sensor.soil_temperature };
         }
     },
     'cs-facility': {
-        apiEndpoint: '/api/insert-sample',
         exportFilename: () => `RWS_CSFacility_${new Date().toISOString().slice(0, 10)}.csv`,
         csvHeaders: ['Timestamp', 'Temp (°F)', 'Wind (mph)', 'Rainfall (in)', 'Solar (lx)'],
         csvRowMapping: (i) => [
@@ -129,25 +128,32 @@ const STATIONS_CONFIG = {
             history.solar[i]?.val?.toFixed(0) || ''
         ],
         metrics: {
-            temperature: { canvas: 'tempChart', color: '#c084fc', label: 'Ambient Temp', dec: 1, unit: '°F', avgId: 'avg-temp' },
-            wind: { canvas: 'windChart', color: '#34d399', label: 'Wind Speed', dec: 1, unit: ' mph', avgId: 'avg-wind' },
-            rainfall: { canvas: 'rainChart', color: '#60a5fa', label: 'Rainfall Volume', dec: 3, unit: ' in', avgId: 'avg-rain' },
-            solar: { canvas: 'solarChart', color: '#facc15', label: 'Solar Density', dec: 0, unit: ' lx', avgId: 'avg-solar' }
+            temperature: { canvas: 'tempChart',  color: '#c084fc', label: 'Ambient Temp',    dec: 1, unit: '°F',  avgId: 'avg-temp' },
+            wind:        { canvas: 'windChart',  color: '#34d399', label: 'Wind Speed',       dec: 1, unit: ' mph', avgId: 'avg-wind' },
+            rainfall:    { canvas: 'rainChart',  color: '#60a5fa', label: 'Rainfall Volume',  dec: 3, unit: ' in',  avgId: 'avg-rain' },
+            solar:       { canvas: 'solarChart', color: '#facc15', label: 'Solar Density',    dec: 0, unit: ' lx',  avgId: 'avg-solar' }
         },
-        generateFallbackData: () => ({ indoor_temp: 56.0 + (Math.random() * 2 - 1), wind_speed: Math.max(0, 12 + (Math.random() * 4 - 2)), rainfall: Math.max(0, Math.random() * 0.005), lux: 480 + (Math.random() * 60 - 30), timestamp: new Date().toISOString() }),
+        generateFallbackData: () => ({
+            indoor_temp: 56.0 + (Math.random() * 2 - 1),
+            wind_speed:  Math.max(0, 12 + (Math.random() * 4 - 2)),
+            rainfall:    Math.max(0, Math.random() * 0.005),
+            lux:         480 + (Math.random() * 60 - 30),
+            timestamp:   new Date().toISOString()
+        }),
         updateUI: (sensor) => {
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             const t = Number(sensor.indoor_temp ?? 56);
-            set('weather-temp', t.toFixed(0)); set('weather-feels', t.toFixed(0)); set('nav-temp', t.toFixed(0) + '°F');
-            set('current-temp', t.toFixed(1));
-            set('current-wind', Number(sensor.wind_speed ?? 12).toFixed(1));
-            set('current-rain', Number(sensor.rainfall ?? 0).toFixed(3));
+            set('weather-temp',  t.toFixed(0));
+            set('weather-feels', t.toFixed(0));
+            set('nav-temp',      t.toFixed(0) + '°F');
+            set('current-temp',  t.toFixed(1));
+            set('current-wind',  Number(sensor.wind_speed ?? 12).toFixed(1));
+            set('current-rain',  Number(sensor.rainfall ?? 0).toFixed(3));
             set('current-solar', Number(sensor.lux ?? 480).toFixed(0));
             return { temperature: sensor.indoor_temp, wind: sensor.wind_speed, rainfall: sensor.rainfall, solar: sensor.lux };
         }
     },
     'rm1962': {
-        apiEndpoint: '/api/insert-sample',
         exportFilename: () => `RWS_RM1962_${new Date().toISOString().slice(0, 10)}.csv`,
         csvHeaders: ['Timestamp', 'Temp (°F)', 'Humidity (%)', 'Radiation (nSv/h)', 'Pressure (hPa)'],
         csvRowMapping: (i) => [
@@ -156,37 +162,48 @@ const STATIONS_CONFIG = {
             history.pressure[i]?.val?.toFixed(1) || ''
         ],
         metrics: {
-            temperature: { canvas: 'tempChart', color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F', avgId: 'avg-temp' },
-            humidity: { canvas: 'humidityChart', color: '#22d3ee', label: 'Relative Humidity', dec: 1, unit: '%', avgId: 'avg-humidity' },
-            radiation: { canvas: 'radiationChart', color: '#34d399', label: 'Ambient Radiation', dec: 0, unit: ' nSv/h', avgId: 'avg-radiation' },
-            pressure: { canvas: 'pressureChart', color: '#60a5fa', label: 'Barometric Pressure', dec: 1, unit: ' hPa', avgId: 'avg-pressure' }
+            temperature: { canvas: 'tempChart',       color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F',    avgId: 'avg-temp' },
+            humidity:    { canvas: 'humidityChart',   color: '#22d3ee', label: 'Relative Humidity',   dec: 1, unit: '%',      avgId: 'avg-humidity' },
+            radiation:   { canvas: 'radiationChart',  color: '#34d399', label: 'Ambient Radiation',   dec: 0, unit: ' nSv/h', avgId: 'avg-radiation' },
+            pressure:    { canvas: 'pressureChart',   color: '#60a5fa', label: 'Barometric Pressure', dec: 1, unit: ' hPa',   avgId: 'avg-pressure' }
         },
-        generateFallbackData: () => ({ indoor_temp: 71.0 + (Math.random() * 2 - 1), indoor_humidity: 48.0 + (Math.random() * 4 - 2), radiation: 82 + (Math.random() * 8 - 4), indoor_pressure: 1013 + (Math.random() * 4 - 2), timestamp: new Date().toISOString() }),
+        generateFallbackData: () => ({
+            indoor_temp:     71.0 + (Math.random() * 2 - 1),
+            indoor_humidity: 48.0 + (Math.random() * 4 - 2),
+            radiation:       82   + (Math.random() * 8 - 4),
+            indoor_pressure: 1013 + (Math.random() * 4 - 2),
+            timestamp: new Date().toISOString()
+        }),
         updateUI: (sensor) => {
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             const t = Number(sensor.indoor_temp ?? 71);
-            set('weather-temp', t.toFixed(0)); set('weather-feels', t.toFixed(0)); set('nav-temp', t.toFixed(0) + '°F');
-            set('current-temp', t.toFixed(1));
-            set('current-humidity', Number(sensor.indoor_humidity ?? 48).toFixed(1));
+            set('weather-temp',      t.toFixed(0));
+            set('weather-feels',     t.toFixed(0));
+            set('nav-temp',          t.toFixed(0) + '°F');
+            set('current-temp',      t.toFixed(1));
+            set('current-humidity',  Number(sensor.indoor_humidity ?? 48).toFixed(1));
             set('current-radiation', Math.round(sensor.radiation ?? 82));
-            set('current-pressure', Number(sensor.indoor_pressure ?? 1013).toFixed(1));
+            set('current-pressure',  Number(sensor.indoor_pressure ?? 1013).toFixed(1));
             return { temperature: sensor.indoor_temp, humidity: sensor.indoor_humidity, radiation: sensor.radiation, pressure: sensor.indoor_pressure };
         }
     }
 };
 
-// builds one chart per metric for whichever station config is active
+// builds a sparkline chart for a metric and saves it so we can update it later
 function buildChart(key, m) {
     const ctx = document.getElementById(m.canvas);
     if (!ctx) return;
     instances[key] = new Chart(ctx, {
         type: 'line',
-        data: { labels: [], datasets: [{ data: [], borderColor: m.color, backgroundColor: m.color + '14', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true }] },
+        data: {
+            labels: [],
+            datasets: [{ data: [], borderColor: m.color, backgroundColor: m.color + '14', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true }]
+        },
         options: {
-            responsive: true, maintainAspectRatio: false, animation: false,
-            layout: {
-                padding: { top: 12, bottom: 4 } // a little room so the avg label doesn't get clipped at the top
-            },
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            layout: { padding: { top: 12, bottom: 4 } },
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 6, maxRotation: 0 } },
@@ -197,26 +214,26 @@ function buildChart(key, m) {
     });
 }
 
+// grabs latest sensor data from the API (uses fake data if it fails) and updates the charts
 async function fetchAndUpdate() {
     const config = STATIONS_CONFIG[currentStation];
     if (!config) return;
 
     let sensor;
     try {
-        const res = await fetch(`/api/live-data.php?station=${currentStation}`);
+        const res = await fetch(`https://dev-engin-rws.pantheonsite.io/live-data.php?station=${currentStation}`);
+        if (!res.ok) throw new Error('API error');
         sensor = (await res.json()).data;
     } catch (_) {
         sensor = config.generateFallbackData();
     }
-    if (!sensor) return;
+    if (!sensor) sensor = config.generateFallbackData();
 
     const pushMap = config.updateUI(sensor);
-    const readingTime = new Date(sensor.timestamp || Date.now());
+    const readingTime = new Date();
     const ts = readingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     const keys = Object.keys(config.metrics);
-    // using the first metric's chart as a "did we already log this exact timestamp" guard
-    // assumes keys[0] always has a real chart instance on the page, which holds for all 3 stations today
     const checkInst = instances[keys[0]];
     if (!checkInst || !checkInst.data.labels.length || checkInst.data.labels[checkInst.data.labels.length - 1] !== ts) {
         keys.forEach(key => {
@@ -227,13 +244,8 @@ async function fetchAndUpdate() {
             const val = pushMap[key] ?? 0;
             inst.data.labels.push(ts);
             inst.data.datasets[0].data.push(val);
-
             if (inst.data.labels.length > MAX_PTS) { inst.data.labels.shift(); inst.data.datasets[0].data.shift(); }
 
-            // NOTE: history buffer also gets capped at MAX_PTS (30), same as the live chart.
-            // since this only logs once every 10 min, that's a 5 hour window total before old
-            // entries start getting dropped from the report modal. if the report is meant to
-            // cover a full day, this cap is too aggressive and should probably be its own constant.
             if (readingTime.getTime() - lastHistoryLogTime >= HISTORY_INTERVAL_MS) {
                 history[key].push({ ts, val, t: readingTime.getTime() });
                 if (history[key].length > MAX_PTS) history[key].shift();
@@ -253,12 +265,7 @@ async function fetchAndUpdate() {
     }
 }
 
-// returns history entries inside the from/to time window from the modal inputs
-// NOTE: from/to are plain "HH:MM" strings compared as text, with no date attached.
-// this works fine within a single day but breaks in two ways if history spans multiple days:
-//   1. a range crossing midnight (e.g. 22:00 to 02:00) returns nothing, since "22:00" > "02:00" as strings
-//   2. there's no actual date filter, so the same time-of-day from two different days both pass
-// fine as-is if the report never needs to span more than ~5 hours of history (see cap above), just flagging
+// returns history for a metric, cut down to whatever time range the user picked
 function getFilteredHistory(metric) {
     const hist = history[metric] || [];
     const fromEl = document.getElementById('filter-from');
@@ -275,7 +282,7 @@ function getFilteredHistory(metric) {
     });
 }
 
-// rebuilds the stat row + table for the report modal using whatever filter is active
+// fills in the stats (min/max/avg) and history table inside the report popup
 function renderReportTable(metric) {
     const config = STATIONS_CONFIG[currentStation];
     if (!config || !config.metrics[metric]) return;
@@ -285,10 +292,10 @@ function renderReportTable(metric) {
     const fmt      = v => Number(v).toFixed(meta.dec) + meta.unit;
 
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    setVal('modal-stat-current', vals.length ? fmt(vals[vals.length - 1]) : '--');
-    setVal('modal-stat-min',     vals.length ? fmt(Math.min(...vals))     : '--');
-    setVal('modal-stat-max',     vals.length ? fmt(Math.max(...vals))     : '--');
-    setVal('modal-stat-avg',     vals.length ? fmt(vals.reduce((a, b) => a + b, 0) / vals.length) : '--');
+    setVal('modal-stat-current', vals.length ? fmt(vals[vals.length - 1])                             : '--');
+    setVal('modal-stat-min',     vals.length ? fmt(Math.min(...vals))                                  : '--');
+    setVal('modal-stat-max',     vals.length ? fmt(Math.max(...vals))                                  : '--');
+    setVal('modal-stat-avg',     vals.length ? fmt(vals.reduce((a, b) => a + b, 0) / vals.length)     : '--');
 
     const tableRows = document.getElementById('modal-table-rows');
     if (tableRows) {
@@ -300,6 +307,7 @@ function renderReportTable(metric) {
     }
 }
 
+// opens the report popup for a metric and pre-fills the time filter with the available range
 function openReportPopup(metric) {
     activeMetric = metric;
     const config = STATIONS_CONFIG[currentStation];
@@ -308,7 +316,6 @@ function openReportPopup(metric) {
     const titleEl = document.getElementById('modal-metric-title');
     if (titleEl) titleEl.textContent = config.metrics[metric].label;
 
-    // prefill the time range to match whatever data we've actually got, so it's not empty by default
     const hist = history[metric] || [];
     if (hist.length) {
         const fromEl = document.getElementById('filter-from');
@@ -325,10 +332,12 @@ function openReportPopup(metric) {
     if (modal) modal.classList.remove('hidden');
 }
 
+// re-renders the table when the user hits apply on the time filter
 function applyTimeFilter() {
     if (activeMetric) renderReportTable(activeMetric);
 }
 
+// clears the time filter and shows all readings again
 function clearTimeFilter() {
     const fromEl = document.getElementById('filter-from');
     const toEl   = document.getElementById('filter-to');
@@ -337,6 +346,7 @@ function clearTimeFilter() {
     if (activeMetric) renderReportTable(activeMetric);
 }
 
+// closes the report popup and resets everything back to empty
 function closeReportPopup() {
     const modal = document.getElementById('report-modal');
     if (modal) modal.classList.add('hidden');
@@ -347,6 +357,7 @@ function closeReportPopup() {
     if (toEl)   toEl.value   = '';
 }
 
+// packages all stored history into a csv and downloads it
 function downloadAllCombinedCSV() {
     const config = STATIONS_CONFIG[currentStation];
     if (!config) return;
@@ -359,30 +370,14 @@ function downloadAllCombinedCSV() {
     a.click();
 }
 
-async function insertSampleData() {
-    const config = STATIONS_CONFIG[currentStation];
-    if (!config) return;
-    try {
-        await fetch(config.apiEndpoint, { method: 'POST' });
-        alert('Sample telemetry dispatched.');
-    } catch (e) {
-        console.error(e);
-    }
-}
 
-// figures out which station page we're on, either from a data attribute on the script tag
-// or by checking which chart canvases actually exist on the page
+// Detect which station page we're on by checking which chart canvas elements exist
 document.addEventListener('DOMContentLoaded', () => {
     initClockAndDates();
 
-    const scriptTag = document.querySelector('script[src*="station-manager.js"]');
-    if (scriptTag && scriptTag.getAttribute('data-station')) {
-        currentStation = scriptTag.getAttribute('data-station');
-    } else {
-        if (document.getElementById('radonChart')) currentStation = 'basement';
-        else if (document.getElementById('solarChart')) currentStation = 'cs-facility';
-        else if (document.getElementById('humidityChart')) currentStation = 'rm1962';
-    }
+    if (document.getElementById('radonChart'))         currentStation = 'basement';
+    else if (document.getElementById('solarChart'))    currentStation = 'cs-facility';
+    else if (document.getElementById('humidityChart')) currentStation = 'rm1962';
 
     const config = STATIONS_CONFIG[currentStation];
     if (!config) return;
@@ -402,4 +397,3 @@ window.closeReportPopup       = closeReportPopup;
 window.applyTimeFilter        = applyTimeFilter;
 window.clearTimeFilter        = clearTimeFilter;
 window.downloadAllCombinedCSV = downloadAllCombinedCSV;
-window.insertSampleData       = insertSampleData;

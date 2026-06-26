@@ -18,39 +18,20 @@ class SoilMoisture:
         self.power_pin = power_pin
         self.settle_time = settle_time
 
-        # GPIO setup
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.power_pin, GPIO.OUT)
         GPIO.output(self.power_pin, GPIO.LOW)
 
-        # I2C setup
         self.i2c = I2C or board.I2C()
-
-        # ADS1115 setup
         self.ads = ads or ADS1115(self.i2c)
-
-        # Analog channel setup
         self.chan = AnalogIn(self.ads, adc_channel)
 
     def read(self) -> float:
-        """
-        Returns:
-            dict with:
-                raw: ADC raw value
-                voltage: measured voltage
-        """
-
-        # Power sensor ON
+        """Powers the sensor, waits for it to stabilize, then returns the voltage reading."""
         GPIO.output(self.power_pin, GPIO.HIGH)
-
-        # Let sensor stabilize
         time.sleep(self.settle_time)
-
         voltage = self.chan.voltage
-
-        # Power sensor OFFS
         GPIO.output(self.power_pin, GPIO.LOW)
-
         return voltage
 
     def cleanup(self) -> None:

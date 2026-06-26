@@ -3,25 +3,27 @@ import sqlite3
 import os
 
 app = Flask(__name__, static_folder='../styles', static_url_path='/styles', template_folder='../public')
+
 @app.route('/styles/styles.css')
 @app.route('/public/styles/styles.css')
 def serve_styles():
     return app.send_static_file('styles.css')
-# --- FIX: Point to the live database file being updated by RWS.py ---
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.abspath(os.path.join(BASE_DIR, '../data/sensorData.db'))
+
 
 def get_latest_data():
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-        # Pulls the single newest row populated by RWS.py
         row = conn.execute("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 1").fetchone()
         conn.close()
         return dict(row) if row else None
     except Exception as e:
         print(f"Database read error: {e}")
         return None
+
 
 @app.route('/')
 def index():
@@ -44,12 +46,10 @@ def live_data():
     data = get_latest_data()
     if data:
         return jsonify({"status": "online", "data": data})
-    
-    # Visually distinct fallbacks so you can easily tell if the DB file is missing/empty
     return jsonify({
-        "status": "offline_fallback", 
+        "status": "offline",
         "data": {
-            "indoor_temp": 99.9, "indoor_humidity": 0.0, "radon_level": 0.0,
+            "indoor_temp": 0.0, "indoor_humidity": 0.0, "radon_level": 0.0,
             "wind_speed": 0.0, "rainfall": 0.0, "lux": 0.0, "soil_temperature": 0.0
         }
     })
@@ -70,6 +70,6 @@ def insert_sample():
         print(f"Sample insert error: {e}")
         return jsonify({"status": "error"}), 500
 
+
 if __name__ == '__main__':
-    # Cleaned up: removed the broken init_db() call since RWS.py handles DB generation
     app.run(host='0.0.0.0', port=8080, debug=True)

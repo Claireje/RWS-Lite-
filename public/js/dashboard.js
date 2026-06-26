@@ -1,8 +1,5 @@
-// seasonal radiation baselines for Ann Arbor
-// cosmic ray flux goes up in winter bc cold air is denser at altitude
-// but the surface layer attenuates less when pressure is lower
-// indoor radon also spikes in winter since buildings are sealed up
-// numbers are roughly EPA background + NOAA atmospheric data, not exact
+// Seasonal radiation background ranges for Ann Arbor (nSv/h)
+// Based on EPA background levels and seasonal variation
 const RAD_SEASONS = {
     winter: { label: 'Winter', months: [11, 0, 1],  low: 70,  high: 140 },
     spring: { label: 'Spring', months: [2,  3, 4],  low: 60,  high: 120 },
@@ -15,33 +12,31 @@ function getCurrentSeason() {
     return Object.values(RAD_SEASONS).find(s => s.months.includes(m));
 }
 
-// status tiers based on how far above the seasonal high we are
 function getRadiationStatus(nSvh) {
     const s = getCurrentSeason();
-    if (nSvh <= s.high)        return { text: 'Normal',          color: '#22c55e', icon: '🌲', title: 'Safe range.',      body: `Within the expected ${s.label.toLowerCase()} background.` };
-    if (nSvh <= s.high * 1.5)  return { text: 'Monitor',         color: '#f59e0b', icon: '👀', title: 'Worth watching.',  body: `Slightly above ${s.label.toLowerCase()} seasonal average.` };
-    if (nSvh <= s.high * 2.5)  return { text: 'Elevated',        color: '#f97316', icon: '⚠️', title: 'Elevated.',        body: `Notably above ${s.label.toLowerCase()} normal — monitor closely.` };
-    return                            { text: 'Action Required', color: '#ef4444', icon: '🚨', title: 'Investigate now.', body: 'Far above seasonal background — contact facilities.' };
+    if (nSvh <= s.high)        return { text: 'Normal',          color: '#22c55e', icon: '●', title: 'Safe range.',      body: `Within the expected ${s.label.toLowerCase()} background.` };
+    if (nSvh <= s.high * 1.5)  return { text: 'Monitor',         color: '#f59e0b', icon: '●', title: 'Worth watching.',  body: `Slightly above ${s.label.toLowerCase()} seasonal average.` };
+    if (nSvh <= s.high * 2.5)  return { text: 'Elevated',        color: '#f97316', icon: '▲', title: 'Elevated.',        body: `Notably above ${s.label.toLowerCase()} normal — monitor closely.` };
+    return                            { text: 'Action Required', color: '#ef4444', icon: '!', title: 'Investigate now.', body: 'Far above seasonal background — contact facilities.' };
 }
 
-// quick helper for testing, fires sample telemetry at the API
 async function insertSampleData() {
     try {
         await fetch('/api/insert-sample', { method: 'POST' });
-        alert("Sample telemetry dispatched.");
+        alert("Sample data inserted.");
         location.reload();
     } catch(e) {
         console.error(e);
     }
 }
 
-// top bar clock, ticks every second
+// Top bar clock
 setInterval(() => {
     const el = document.getElementById('top-bar-clock');
     if (el) el.textContent = new Date().toLocaleTimeString();
 }, 1000);
 
-// good morning / afternoon / evening greeting + today's date
+// Time-of-day greeting and date
 (function() {
     const h = new Date().getHours();
     const g = h < 12 ? 'Good Morning!' : h < 17 ? 'Good Afternoon!' : 'Good Evening!';
@@ -51,10 +46,7 @@ setInterval(() => {
     if (de) de.textContent = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 })();
 
-/* -----------------------------------------
-   three.js building scene
-   3 floors, wireframe shell, pulsing sensor nodes for roof/indoor/basement
------------------------------------------ */
+// Three.js building visualization
 let scene, camera, renderer, controls, roofNode, indoorNode, basementNode, building;
 
 function initThree() {
@@ -70,7 +62,6 @@ function initThree() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // orbit controls if loaded, otherwise just slowly spin the building so it's not static
     if (typeof THREE.OrbitControls !== 'undefined') {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -79,7 +70,7 @@ function initThree() {
     }
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const light = new THREE.DirectionalLight(0xffcb05, 0.8); // maize
+    const light = new THREE.DirectionalLight(0xffcb05, 0.8);
     light.position.set(10, 20, 10);
     scene.add(light);
 
@@ -87,7 +78,6 @@ function initThree() {
     const mat     = new THREE.MeshStandardMaterial({ color: 0x0c1428, transparent: true, opacity: 0.25 });
     const wireMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, transparent: true, opacity: 0.3 });
 
-    // stack 3 floors
     for (let i = 0; i < 3; i++) {
         const geo = new THREE.BoxGeometry(10, 3.8, 7);
         const s = new THREE.Mesh(geo, mat);
@@ -97,19 +87,18 @@ function initThree() {
     }
     scene.add(building);
 
-    // little glowing dot + aura for each sensor location
     function createNode(color, x, y, z) {
         const core = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), new THREE.MeshBasicMaterial({ color }));
         core.position.set(x, y, z);
         const aura = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.2 }));
         core.add(aura);
         building.add(core);
-        return aura; // returning the aura so we can pulse it in the animate loop
+        return aura;
     }
 
-    roofNode     = createNode(0xffcb05, 0,    5.8,  0);
-    indoorNode   = createNode(0x4ade80, 3,    0,    0.5);
-    basementNode = createNode(0xf87171, -3,  -4,   -0.5);
+    roofNode     = createNode(0xffcb05, 0,   5.8,  0);
+    indoorNode   = createNode(0x4ade80, 3,   0,    0.5);
+    basementNode = createNode(0xf87171, -3, -4,   -0.5);
 
     const grid = new THREE.GridHelper(40, 30, 0x1e2937, 0x0f172a);
     grid.position.y = -6;
@@ -119,7 +108,7 @@ function initThree() {
     (function animate() {
         requestAnimationFrame(animate);
         t += 0.05;
-        const scale = 1 + Math.sin(t) * 0.25; // breathing pulse on the nodes
+        const scale = 1 + Math.sin(t) * 0.25;
         [roofNode, indoorNode, basementNode].forEach(n => n && n.scale.set(scale, scale, scale));
         controls.update();
         renderer.render(scene, camera);
@@ -132,9 +121,7 @@ function initThree() {
     });
 }
 
-/* -----------------------------------------
-   chart.js sparkline cards, one per metric
------------------------------------------ */
+// Sparkline charts
 const CHARTS = {
     temp:     { chart: null, labels: [], data: [], color: '#c084fc', baseline: 55.5, blLabel: '55.5°F' },
     humidity: { chart: null, labels: [], data: [], color: '#22d3ee', baseline: 50,   blLabel: '50%'    },
@@ -143,14 +130,13 @@ const CHARTS = {
     solar:    { chart: null, labels: [], data: [], color: '#ffcb05', baseline: 450,  blLabel: '450lx'  },
     radon:    { chart: null, labels: [], data: [], color: '#fb7185', baseline: 1.2,  blLabel: '1.2pCi' },
 };
-const MAX_POINTS = 30; // rolling window so the line charts don't grow forever
+const MAX_POINTS = 30;
 
 function buildChart(key) {
     const cfg = CHARTS[key];
     const ctx = document.getElementById('chart-' + key);
     if (!ctx) return;
 
-    // only add the baseline dashed line if the annotation plugin actually loaded
     const annotationPlugin = {};
     const annotationObj = window['chartjs-plugin-annotation'] || window.ChartAnnotation;
     if (annotationObj) {
@@ -184,14 +170,8 @@ function buildChart(key) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            // linear transition instead of the default elastic-ish easing so live updates feel steady, not jumpy
             transitions: {
-                active: {
-                    animation: {
-                        duration: 400,
-                        easing: 'linear'
-                    }
-                }
+                active: { animation: { duration: 400, easing: 'linear' } }
             },
             plugins: {
                 legend: { display: false },
@@ -225,10 +205,7 @@ function initAllCharts() {
     Object.keys(CHARTS).forEach(buildChart);
 }
 
-/* -----------------------------------------
-   live data polling
-   hits the WP REST endpoint, falls back to mock data if it's down
------------------------------------------ */
+// Live data polling — falls back to simulated values if the API is unreachable
 async function updateLiveChart() {
     let sensor;
     try {
@@ -236,9 +213,7 @@ async function updateLiveChart() {
         const payload = await res.json();
         sensor = payload.data;
     } catch(e) {
-        // API's probably just asleep (pantheon free tier naps), feed in fake but plausible numbers
-        // logging this so it's obvious in devtools we're on mock data and not actually live
-        console.warn('sensor fetch failed, falling back to mock data:', e);
+        console.warn('Sensor fetch failed, using fallback data:', e);
         sensor = {
             indoor_temp:     55.1 + (Math.random() * 2 - 1),
             indoor_humidity: 48.0 + (Math.random() * 4 - 2),
@@ -267,7 +242,6 @@ async function updateLiveChart() {
         radon:    sensor.radon_level,
     };
 
-    // update the live readout cards
     setEl('current-temp',     incoming.temp,     1);
     setEl('current-humidity', incoming.humidity, 1);
     setEl('current-wind',     incoming.wind,     1);
@@ -290,8 +264,7 @@ async function updateLiveChart() {
     const radRangeEl = document.getElementById('rad-range-text');
     if (radRangeEl) radRangeEl.textContent = `${season.label} normal: ${season.low}–${season.high} nSv/h`;
 
-    // shield glow matches whatever tier we're in
-    const shieldEl = document.getElementById('rad-shield');
+    const shieldEl   = document.getElementById('rad-shield');
     const shieldIcon = document.getElementById('rad-shield-icon');
     if (shieldEl) {
         shieldEl.style.borderColor = status.color + '99';
@@ -303,10 +276,10 @@ async function updateLiveChart() {
     const infoIcon  = document.getElementById('rad-info-icon');
     const infoTitle = document.getElementById('rad-info-title');
     const infoText  = document.getElementById('rad-info-text');
-    if (infoBox)   infoBox.style.borderColor  = status.color + '33';
-    if (infoIcon)  infoIcon.textContent       = status.icon;
-    if (infoTitle) infoTitle.textContent      = status.title;
-    if (infoText)  infoText.textContent       = status.body;
+    if (infoBox)   infoBox.style.borderColor = status.color + '33';
+    if (infoIcon)  infoIcon.textContent      = status.icon;
+    if (infoTitle) infoTitle.textContent     = status.title;
+    if (infoText)  infoText.textContent      = status.body;
 
     setEl('weather-temp',  sensor.indoor_temp, 0);
     setEl('weather-feels', sensor.indoor_temp, 0);
@@ -314,7 +287,6 @@ async function updateLiveChart() {
     const ts = new Date(sensor.timestamp || new Date())
         .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    // push new point onto each chart, trim old ones off the front so it scrolls
     Object.entries(incoming).forEach(([key, val]) => {
         const cfg = CHARTS[key];
         if (!cfg) return;
@@ -328,10 +300,7 @@ async function updateLiveChart() {
     });
 }
 
-/* -----------------------------------------
-   custom sensor list (sidebar)
-   stored in localStorage since these are just user-added bookmarks, not real telemetry
------------------------------------------ */
+// Custom sensor bookmarks stored in localStorage
 const SENSORS_KEY = 'rws_custom_sensors';
 
 function loadCustomSensors() {
@@ -402,7 +371,6 @@ function saveNewSensor() {
     saveCustomSensors(sensors);
     renderCustomSensors();
 
-    // pop the submenu open so they can actually see the thing they just added
     const submenu = document.getElementById('radiations-submenu');
     const chevron = document.getElementById('radiation-chevron');
     if (submenu?.classList.contains('hidden')) {
@@ -418,9 +386,6 @@ function removeCustomSensor(id) {
     renderCustomSensors();
 }
 
-/* -----------------------------------------
-   radiation info modal + boot
------------------------------------------ */
 function openRadiationInfo() {
     const modal = document.getElementById('rad-info-modal');
     if (modal) modal.classList.remove('hidden');
@@ -431,7 +396,6 @@ function closeRadiationInfo() {
     if (modal) modal.classList.add('hidden');
 }
 
-// close modals on backdrop click, set up the sidebar list on load
 window.addEventListener('DOMContentLoaded', () => {
     const radModal    = document.getElementById('rad-info-modal');
     const sensorModal = document.getElementById('add-sensor-modal');
@@ -440,24 +404,19 @@ window.addEventListener('DOMContentLoaded', () => {
     renderCustomSensors();
 });
 
-/* -----------------------------------------
-   export all metrics to one CSV
------------------------------------------ */
 function exportAllStationsCSV() {
-    // all metrics push together every poll, so just grab whichever array is longest as the timestamp source
     const keys = Object.keys(CHARTS);
     const maxLen = Math.max(...keys.map(k => CHARTS[k].labels.length));
 
     if (maxLen === 0) {
-        alert('No data collected yet — wait for the first readings to come in.');
+        alert('No data collected yet.');
         return;
     }
 
-    const tsSource = keys.find(k => CHARTS[k].labels.length === maxLen);
+    const tsSource   = keys.find(k => CHARTS[k].labels.length === maxLen);
     const timestamps = CHARTS[tsSource].labels;
-
-    const headers = ['Timestamp', 'Temp (°F)', 'Humidity (%)', 'Wind (mph)', 'Rainfall (in)', 'Solar (lx)', 'Radon (pCi/L)'];
-    const colKeys = ['temp', 'humidity', 'wind', 'rain', 'solar', 'radon'];
+    const headers    = ['Timestamp', 'Temp (°F)', 'Humidity (%)', 'Wind (mph)', 'Rainfall (in)', 'Solar (lx)', 'Radon (pCi/L)'];
+    const colKeys    = ['temp', 'humidity', 'wind', 'rain', 'solar', 'radon'];
 
     const rows = [headers];
     for (let i = 0; i < maxLen; i++) {
@@ -470,15 +429,14 @@ function exportAllStationsCSV() {
         ]);
     }
 
-    const csv = rows.map(r => r.join(',')).join('\n');
+    const csv  = rows.map(r => r.join(',')).join('\n');
     const date = new Date().toISOString().slice(0, 10);
-    const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    const a    = document.createElement('a');
+    a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
     a.download = `RWS_AllStations_${date}.csv`;
     a.click();
 }
 
-// kick everything off once the page loads
 window.onload = function() {
     initThree();
     initAllCharts();

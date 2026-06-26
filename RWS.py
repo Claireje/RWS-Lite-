@@ -1,6 +1,6 @@
-# ================================================
-# RWS.py - Main Hardware Collection Script (Mac Enhanced Calibration)
-# ================================================
+# RWS.py - Main sensor data collection script
+# Reads from all connected sensors and saves readings to the local SQLite database.
+# On Mac, runs in simulation mode with generated values instead of real hardware.
 
 import sys
 import random
@@ -16,23 +16,19 @@ logging.basicConfig(level=logging.ERROR)
 
 IS_MAC = sys.platform == "darwin"
 
-# Dynamic Mock Drivers for Mac Stability
 class MockAnalogIn:
     def __init__(self, voltage=0.0):
         self.voltage = voltage
 
 if IS_MAC:
-    print("💻 Mac detected: Running in SENSOR INTEGRATION MODE")
-    # Add the current directory to path so python can find the sensors folder
+    print("Mac detected: running in simulation mode")
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    
-    # Dynamically load your team's actual sensor algorithms
     try:
         UV_Module = importlib.import_module("sensors.UV")
         Wind_Module = importlib.import_module("sensors.WindDirection")
-        print("✅ Successfully linked to production sensor logic modules.")
+        print("Sensor modules loaded.")
     except Exception as e:
-        print(f"⚠️ Warning loading sensor modules: {e}")
+        print(f"Warning loading sensor modules: {e}")
         UV_Module = None
         Wind_Module = None
 else:
@@ -47,14 +43,12 @@ else:
     from sensors.DIYgm import GeigerCounter
     from sensors.UV import UV
 
-# ========================= CONFIG =========================
 PI_NUM = 1
-DATA_INTERVAL = 5  # seconds
+DATA_INTERVAL = 5  # seconds between readings
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_FILE = os.path.abspath(os.path.join(BASE_DIR, 'data/sensorData.db'))
 verbose = True
 
-# ======================= SETUP =======================
 if not IS_MAC:
     i2c = board.I2C()
     ads = ADS1115(i2c)
@@ -67,7 +61,7 @@ if not IS_MAC:
     geiger = GeigerCounter()
     UVSensor = UV(I2C=i2c)
 
-# ======================= DATABASE =======================
+
 def init_db():
     os.makedirs(os.path.dirname(DATABASE_FILE), exist_ok=True)
     conn = sqlite3.connect(DATABASE_FILE)
@@ -86,51 +80,45 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def get_time():
     return datetime.now(ZoneInfo("America/Detroit")).strftime("%Y-%m-%d %H:%M:%S")
 
-# ======================= MAIN LOOP =======================
+
 def main():
     init_db()
     connection = sqlite3.connect(DATABASE_FILE)
     cursor = connection.cursor()
 
-    print(f"🚀 MRWS Sensor-Linked Pipeline Started (Interval: {DATA_INTERVAL}s)")
+    print(f"RWS collection started (interval: {DATA_INTERVAL}s)")
 
     try:
         while True:
             current_time = get_time()
 
             if IS_MAC:
-                # 1. Base Ambient Metrics
                 i_temp = 56.0 + random.uniform(-1.0, 1.0)
                 i_humidity = 48.0 + random.uniform(-1.5, 1.5)
                 i_pressure, i_gas = 1013.25, 120.0
                 percentage, temp = 32.5, 54.0
-                
-                # 2. Wind Speed calculation from team's wind.py formula
+
                 simulated_pulses = random.randint(1, 8)
-                mph = (simulated_pulses / 2) * 1.492  # Uses the exact 1.492 scaling ratio
-                
-                # 3. Wind Direction processed via team's real function
+                mph = (simulated_pulses / 2) * 1.492
+
                 if Wind_Module and hasattr(Wind_Module, 'get_direction'):
-                    mock_direction_voltage = random.uniform(0.1, 3.0)
-                    direction = Wind_Module.get_direction(mock_direction_voltage)
+                    direction = Wind_Module.get_direction(random.uniform(0.1, 3.0))
                 else:
                     direction = "N"
 
-                # 4. UV Index processed via team's real conversion table
                 if UV_Module and hasattr(UV_Module, 'voltage_to_uv_index'):
-                    mock_uv_voltage = random.uniform(0.02, 1.1)
-                    uv = UV_Module.voltage_to_uv_index(mock_uv_voltage)
+                    uv = UV_Module.voltage_to_uv_index(random.uniform(0.02, 1.1))
                 else:
                     uv = 0
-                
+
                 rainIN = random.choice([0.00, 0.00, 0.01, 0.00])
                 radon_level, geiger_cpm = 1.2, 14.0
                 lux = 450.0 + random.uniform(-30, 30)
             else:
-                # Real hardware paths execution branch
                 try: i_temp, i_humidity, i_pressure, i_gas = BME_Indoor.read()
                 except: i_temp = i_humidity = i_pressure = i_gas = -1
                 try: _, percentage = soilMoist.read()
@@ -153,13 +141,12 @@ def main():
                 except: uv = lux = -1
 
             if verbose:
-                print(f"\n[{current_time}] Sensor Matrix Ingestion:")
-                print(f"  Temp: {i_temp:.1f}°F | Wind: {mph:.2f} mph ({direction}) | UV Index: {uv}")
-                print(f"  Solar: {lux:.1f} Lux | Rain Logged: {rainIN:.2f} in")
+                print(f"\n[{current_time}]")
+                print(f"  Temp: {i_temp:.1f}F | Wind: {mph:.2f} mph ({direction}) | UV: {uv}")
+                print(f"  Solar: {lux:.1f} lux | Rainfall: {rainIN:.2f} in")
 
-            # Store computed framework attributes directly to DB
             cursor.execute('''
-                INSERT INTO sensor_data 
+                INSERT INTO sensor_data
                 (pi_num, timestamp, indoor_temp, indoor_humidity, indoor_pressure, indoor_gas,
                  soil_moisture, soil_temperature, wind_speed, wind_direction, rainfall,
                  radon_level, geiger_cpm, UV, lux)
@@ -173,9 +160,10 @@ def main():
             time.sleep(DATA_INTERVAL)
 
     except KeyboardInterrupt:
-        print("\n\n🛑 Stopping system collection gracefully...")
+        print("\nStopping data collection.")
     finally:
         connection.close()
+
 
 if __name__ == "__main__":
     main()
