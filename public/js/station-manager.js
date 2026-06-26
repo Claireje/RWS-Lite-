@@ -51,14 +51,17 @@ const avgBaselinePlugin = {
 
 // updates the clock every second and fills in today's date on the page
 function initClockAndDates() {
+    // tick every second and update the clock in the top bar
     setInterval(() => {
         const el = document.getElementById('top-bar-clock');
         if (el) el.textContent = new Date().toLocaleTimeString();
     }, 1000);
 
+    // fill in the date shown in the greeting banner
     const de = document.getElementById('greeting-date');
     if (de) de.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+    // fill in the date shown inside the report modal
     const md = document.getElementById('modal-generation-date');
     if (md) md.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }
@@ -221,36 +224,43 @@ async function fetchAndUpdate() {
 
     let sensor;
     try {
+        // try to get real data from the API
         const res = await fetch(`https://dev-engin-rws.pantheonsite.io/live-data.php?station=${currentStation}`);
         if (!res.ok) throw new Error('API error');
         sensor = (await res.json()).data;
     } catch (_) {
+        // API failed, use randomly generated fallback data instead
         sensor = config.generateFallbackData();
     }
     if (!sensor) sensor = config.generateFallbackData();
 
+    // update the displayed values on the page and get back a map of the new readings
     const pushMap = config.updateUI(sensor);
     const readingTime = new Date();
     const ts = readingTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     const keys = Object.keys(config.metrics);
     const checkInst = instances[keys[0]];
+    // skip if we already pushed a reading at this exact second
     if (!checkInst || !checkInst.data.labels.length || checkInst.data.labels[checkInst.data.labels.length - 1] !== ts) {
         keys.forEach(key => {
             const inst = instances[key];
             const m = config.metrics[key];
             if (!inst) return;
 
+            // add the new value to the chart and drop the oldest one if we're over the limit
             const val = pushMap[key] ?? 0;
             inst.data.labels.push(ts);
             inst.data.datasets[0].data.push(val);
             if (inst.data.labels.length > MAX_PTS) { inst.data.labels.shift(); inst.data.datasets[0].data.shift(); }
 
+            // save a reading to history every 10 minutes for the report table
             if (readingTime.getTime() - lastHistoryLogTime >= HISTORY_INTERVAL_MS) {
                 history[key].push({ ts, val, t: readingTime.getTime() });
                 if (history[key].length > MAX_PTS) history[key].shift();
             }
 
+            // recalculate and display the average below the chart
             const vals = inst.data.datasets[0].data;
             const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
             const avgEl = document.getElementById(m.avgId);
@@ -261,6 +271,7 @@ async function fetchAndUpdate() {
         if (readingTime.getTime() - lastHistoryLogTime >= HISTORY_INTERVAL_MS) {
             lastHistoryLogTime = readingTime.getTime();
         }
+        // if the report popup is open, refresh the table with the new reading
         if (activeMetric) renderReportTable(activeMetric);
     }
 }
@@ -268,13 +279,16 @@ async function fetchAndUpdate() {
 // returns history for a metric, cut down to whatever time range the user picked
 function getFilteredHistory(metric) {
     const hist = history[metric] || [];
+    // read the from/to time inputs from the filter form
     const fromEl = document.getElementById('filter-from');
     const toEl   = document.getElementById('filter-to');
     const from   = fromEl?.value;
     const to     = toEl?.value;
+    // if no filter is set, just return everything
     if (!from && !to) return hist;
     return hist.filter(h => {
         if (!h.t) return true;
+        // convert the stored timestamp to HH:MM for comparison
         const hhmm = new Date(h.t).toTimeString().slice(0, 5);
         if (from && hhmm < from) return false;
         if (to   && hhmm > to)   return false;
@@ -287,16 +301,20 @@ function renderReportTable(metric) {
     const config = STATIONS_CONFIG[currentStation];
     if (!config || !config.metrics[metric]) return;
     const meta     = config.metrics[metric];
+    // get the readings filtered by whatever time range the user set
     const filtered = getFilteredHistory(metric);
     const vals     = filtered.map(h => h.val);
+    // helper to format a number with the right decimal places and unit label
     const fmt      = v => Number(v).toFixed(meta.dec) + meta.unit;
 
+    // fill in the stat boxes at the top of the popup
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     setVal('modal-stat-current', vals.length ? fmt(vals[vals.length - 1])                             : '--');
     setVal('modal-stat-min',     vals.length ? fmt(Math.min(...vals))                                  : '--');
     setVal('modal-stat-max',     vals.length ? fmt(Math.max(...vals))                                  : '--');
     setVal('modal-stat-avg',     vals.length ? fmt(vals.reduce((a, b) => a + b, 0) / vals.length)     : '--');
 
+    // build the table rows, newest reading first
     const tableRows = document.getElementById('modal-table-rows');
     if (tableRows) {
         tableRows.innerHTML = filtered.length
@@ -313,9 +331,11 @@ function openReportPopup(metric) {
     const config = STATIONS_CONFIG[currentStation];
     if (!config || !config.metrics[metric]) return;
 
+    // set the popup title to the metric name
     const titleEl = document.getElementById('modal-metric-title');
     if (titleEl) titleEl.textContent = config.metrics[metric].label;
 
+    // pre-fill the time filter with the earliest and latest readings we have
     const hist = history[metric] || [];
     if (hist.length) {
         const fromEl = document.getElementById('filter-from');
@@ -328,6 +348,7 @@ function openReportPopup(metric) {
 
     renderReportTable(metric);
 
+    // show the modal
     const modal = document.getElementById('report-modal');
     if (modal) modal.classList.remove('hidden');
 }
@@ -361,9 +382,11 @@ function closeReportPopup() {
 function downloadAllCombinedCSV() {
     const config = STATIONS_CONFIG[currentStation];
     if (!config) return;
+    // start with the header row, then add one row per reading
     const rows = [config.csvHeaders];
     const maxLen = Math.max(...Object.keys(config.metrics).map(k => history[k].length), 0);
     for (let i = 0; i < maxLen; i++) rows.push(config.csvRowMapping(i));
+    // create a temporary link and click it to trigger the download
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r => r.join(',')).join('\n'));
     a.download = config.exportFilename();
