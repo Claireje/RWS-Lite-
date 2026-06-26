@@ -45,7 +45,7 @@ RWS.py       Main sensor loop, runs on the Pi
 
 **`live-data.php`** — queries MiServer and returns the latest sensor row as JSON. usage: `?station=rm1962`
 
-**`RWS.py`** — runs on the Pi, reads sensors, writes to SQLite. if you run it on a Mac it auto-detects and generates fake data instead so you can test without the hardware.
+**`RWS.py`** — runs on the Pi, reads sensors, writes to SQLite.
 
 **`sensors/`** — one file per sensor (BME680, soil moisture, soil temp, wind/rain, wind direction, Geiger counter, RadonEye Bluetooth).
 
