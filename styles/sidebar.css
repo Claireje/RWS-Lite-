@@ -10,11 +10,17 @@
 }
 
 .sidebar-header {
-  padding: 1.25rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(30, 41, 59, 0.6);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+}
+
+.sidebar-logo-img {
+  width: 100%;
+  max-width: 140px;
+  object-fit: contain;
 }
 
 .sidebar-logo-badge {
@@ -66,6 +72,12 @@
   display: block;
 }
 
+.sidebar-nav-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -103,11 +115,17 @@
   border-radius: 0.75rem;
   font-weight: 500;
   font-size: 0.875rem;
+  color: rgb(148 163 184);
   background: none;
   border: none;
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   outline: none;
+}
+
+.sidebar-dropdown-toggle:hover {
+  color: #ffffff;
+  background-color: rgba(30, 41, 59, 0.4);
 }
 
 .sidebar-dropdown-toggle:focus {

@@ -9,80 +9,57 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
     <link rel="stylesheet" href="../styles/footer.css">
     <link rel="stylesheet" href="../styles/index.css">
 </head>
 <body>
 
-    <aside class="app-sidebar">
-        <div class="sidebar-branding">
-            <div>
-                <img src="../icon/rwsmediumlogo.png" alt="RWS Logo">
-                <span>Research Weather</span>
-            </div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../icon/rwsbiglogo.png" alt="RWS Logo" class="sidebar-logo-img">
         </div>
 
         <nav class="sidebar-nav">
-            <p class="nav-section-title">Stations</p>
+            <p class="sidebar-section-label">Stations</p>
 
-            <a href="index.html#overview" class="nav-link">
-                Overview
+            <a href="index.html#overview" class="sidebar-link">
+                <img src="../icon/overview.png" alt="Overview" class="sidebar-nav-icon"> Overview
             </a>
-            <a href="index.html#conditions" class="nav-link">
-                Current Conditions
+            <a href="index.html#conditions" class="sidebar-link">
+                <img src="../icon/currentcon.png" alt="Current Conditions" class="sidebar-nav-icon"> Current Conditions
             </a>
 
-            <div>
-                <button onclick="toggleRadiationsMenu()" class="nav-link nav-active nav-toggle">
-                    <span>Radiations</span>
-                    <svg id="radiation-chevron" class="dropdown-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="sidebar-dropdown">
+                <button onclick="toggleRadiationsMenu()" class="sidebar-dropdown-toggle">
+                    <span class="sidebar-dropdown-label">
+                        <img src="../icon/radiation.png" alt="Radiations" class="sidebar-nav-icon"> Radiations
+                    </span>
+                    <svg id="radiation-chevron" class="sidebar-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
 
-                <div id="radiations-submenu" class="subnav-container hidden">
-                    <a href="cs-facility.html" class="subnav-link-active">
-                        <span>CS Facility Auxiliary Station</span>
-                        <span class="subnav-status active-marker">
-                            <svg class="dropdown-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" d="M3 3l18 18M9.1 14.9a4.2 4.2 0 010-5.8M14.9 9.1a4.2 4.2 0 010 5.8M6 6a8.5 8.5 0 000 12m12-12a8.5 8.5 0 010 12"/>
-                            </svg>
-                        </span>
+                <div id="radiations-submenu" class="sidebar-submenu hidden">
+                    <a href="cs-facility.html" class="sidebar-station-link inactive">
+                        <span>CS Facility Aux Station</span>
+                        <img src="../icon/online.png" alt="Online" class="sidebar-station-icon">
                     </a>
-                    <a href="basement.html" class="subnav-link">
-                        <span>Basement Auxiliary Station</span>
-                        <span class="subnav-status live-marker">
-                            <svg class="dropdown-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                                <path stroke-linecap="round" d="M9 9a4.2 4.2 0 000 6m6-6a4.2 4.2 0 010 6M6 6a8.5 8.5 0 000 12m12-12a8.5 8.5 0 010 12"/>
-                            </svg>
-                        </span>
+                    <a href="basement.html" class="sidebar-station-link inactive">
+                        <span>Basement Aux Station</span>
+                        <img src="../icon/online.png" alt="Online" class="sidebar-station-icon">
                     </a>
-                    <a href="rm1962.html" class="subnav-link">
-                        <span>Room 1962 Auxiliary Station</span>
-                        <span class="subnav-status live-marker">
-                            <svg class="dropdown-chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                                <path stroke-linecap="round" d="M9 9a4.2 4.2 0 000 6m6-6a4.2 4.2 0 010 6M6 6a8.5 8.5 0 000 12m12-12a8.5 8.5 0 010 12"/>
-                            </svg>
-                        </span>
+                    <a href="rm1962.html" class="sidebar-station-link inactive">
+                        <span>Room 1962 Aux Station</span>
+                        <img src="../icon/online.png" alt="Online" class="sidebar-station-icon">
                     </a>
 
-                    <!-- Custom stations injected by dashboard.js -->
-                    <div id="custom-stations-list"></div>
-
-                    <button onclick="openAddSensorModal()" class="add-sensor-btn">
-                        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Add Sensor
-                    </button>
                 </div>
             </div>
 
-            <a href="index.html#measures" class="nav-link">What we measure</a>
-            <a href="index.html#news"     class="nav-link">News &amp; Updates</a>
-            <a href="index.html#about"    class="nav-link">About RWS</a>
+            <a href="index.html#measures" class="sidebar-link"><img src="../icon/measure.png" alt="What we measure" class="sidebar-nav-icon"> What we measure</a>
+            <a href="index.html#news"     class="sidebar-link"><img src="../icon/news.png" alt="News & Updates" class="sidebar-nav-icon"> News &amp; Updates</a>
+            <a href="index.html#about"    class="sidebar-link"><img src="../icon/about.png" alt="About RWS" class="sidebar-nav-icon"> About RWS</a>
         </nav>
     </aside>
 
@@ -142,11 +119,11 @@
                 </div>
 
                 <div class="hero-action-block">
-                    <button class="back-btn">
+                    <a href="#conditions" class="back-btn" style="text-decoration:none;">
                         <span class="rad-explain-btn__info-badge" style="width:1rem;height:1rem;border-radius:9999px;border:1px solid #64748b;display:flex;align-items:center;justify-content:center;font-size:9px;color:#cbd5e1;">i</span>
                         See Full Forecast
                         <span style="color:#94a3b8;">&#8250;</span>
-                    </button>
+                    </a>
                     <span class="banner-date-stamp" id="greeting-date">Thursday, June 25, 2026</span>
                 </div>
             </div>
@@ -170,7 +147,6 @@
 
                     <div class="station-list-col">
                         <div class="station-card station-card--roof">
-                            <div class="station-card-arrow">&#9664;</div>
                             <div class="station-card-top">
                                 <div>
                                     <h3>CS Facility Auxiliary Station</h3>
@@ -433,6 +409,40 @@
                 </div>
             </section>
 
+            <!-- News & Updates -->
+            <section id="news" class="news-section">
+                <div class="news-header">
+                    <div>
+                        <h2>News &amp; Updates</h2>
+                        <p>Latest announcements from the RWS team</p>
+                    </div>
+                </div>
+                <div class="news-grid">
+
+                    <div class="news-card">
+                        <div class="news-card-tag news-tag--update">Update</div>
+                        <h3>New dashboard is up</h3>
+                        <p>We rebuilt the RWS site from scratch. You can now view live sensor readings from all three stations without needing to log in or download anything.</p>
+                        <span class="news-date">June 2026</span>
+                    </div>
+
+                    <div class="news-card">
+                        <div class="news-card-tag news-tag--maintenance">Maintenance</div>
+                        <h3>CS Facility roof sensor went quiet</h3>
+                        <p>The roof station stopped sending data sometime in March 2024. We're still figuring out whether it's a hardware issue or a connection problem with the Pi.</p>
+                        <span class="news-date">March 2024</span>
+                    </div>
+
+                    <div class="news-card">
+                        <div class="news-card-tag news-tag--info">Info</div>
+                        <h3>No more manual file uploads</h3>
+                        <p>The old system required someone to physically download .dat files from the datalogger and upload them by hand. The Pi now handles all of that automatically.</p>
+                        <span class="news-date">May 2026</span>
+                    </div>
+
+                </div>
+            </section>
+
             <global-footer></global-footer>
         </main>
     </div>
@@ -441,127 +451,80 @@
     <div id="rad-info-modal" class="overlay-modal hidden">
         <div class="rad-modal-card">
             <div class="modal-header">
-                <div>
-                    <h2>Normal Radiation Range</h2>
-                    <p>Ann Arbor, MI &middot; varies by season</p>
-                </div>
+                <h2>What is background radiation?</h2>
                 <button onclick="closeRadiationInfo()" class="modal-close-btn">&#10005;</button>
             </div>
 
             <div class="rad-modal-body">
+                <p class="rad-intro">Background radiation is everywhere — it comes from the ground, the air, space, and even the materials buildings are made of. The numbers you see here are completely normal and not harmful.</p>
+
+                <h4 class="rad-section-title">Typical readings in Ann Arbor</h4>
                 <div class="season-grid">
                     <div class="season-card">
-                        <div class="season-card-header">
-                            <span class="season-name">Winter</span>
-                            <span class="season-months">Dec&ndash;Feb</span>
-                        </div>
-                        <div class="range">70&ndash;140 <span>nSv/h</span></div>
-                        <p class="note">Higher cosmic flux, sealed buildings</p>
+                        <span class="season-name">Winter</span>
+                        <span class="season-months">Dec – Feb</span>
+                        <div class="range">70 – 140 <span>nSv/h</span></div>
+                        <p class="note">Windows shut, radon builds up inside</p>
                     </div>
                     <div class="season-card">
-                        <div class="season-card-header">
-                            <span class="season-name">Spring</span>
-                            <span class="season-months">Mar&ndash;May</span>
-                        </div>
-                        <div class="range">60&ndash;120 <span>nSv/h</span></div>
-                        <p class="note">Transitional, ventilation improving</p>
+                        <span class="season-name">Spring</span>
+                        <span class="season-months">Mar – May</span>
+                        <div class="range">60 – 120 <span>nSv/h</span></div>
+                        <p class="note">Buildings start opening up again</p>
                     </div>
                     <div class="season-card">
-                        <div class="season-card-header">
-                            <span class="season-name">Summer</span>
-                            <span class="season-months">Jun&ndash;Aug</span>
-                        </div>
-                        <div class="range">55&ndash;110 <span>nSv/h</span></div>
-                        <p class="note">Lowest &mdash; dense atmosphere, open windows</p>
+                        <span class="season-name">Summer</span>
+                        <span class="season-months">Jun – Aug</span>
+                        <div class="range">55 – 110 <span>nSv/h</span></div>
+                        <p class="note">Usually the lowest readings of the year</p>
                     </div>
                     <div class="season-card">
-                        <div class="season-card-header">
-                            <span class="season-name">Fall</span>
-                            <span class="season-months">Sep&ndash;Nov</span>
-                        </div>
-                        <div class="range">65&ndash;125 <span>nSv/h</span></div>
-                        <p class="note">Rising as buildings close up</p>
+                        <span class="season-name">Fall</span>
+                        <span class="season-months">Sep – Nov</span>
+                        <div class="range">65 – 125 <span>nSv/h</span></div>
+                        <p class="note">Starts climbing as buildings close back up</p>
                     </div>
                 </div>
 
+                <h4 class="rad-section-title">What the status labels mean</h4>
                 <div class="tier-grid">
                     <div class="tier-card tier-card--normal">
                         <div class="tier-dot"></div>
                         <div class="tier-label">Normal</div>
-                        <div class="tier-sub">&le; seasonal high</div>
+                        <div class="tier-sub">within seasonal range</div>
                     </div>
                     <div class="tier-card tier-card--monitor">
                         <div class="tier-dot"></div>
                         <div class="tier-label">Monitor</div>
-                        <div class="tier-sub">up to 1.5&times;</div>
+                        <div class="tier-sub">a bit above average</div>
                     </div>
                     <div class="tier-card tier-card--elevated">
                         <div class="tier-dot"></div>
                         <div class="tier-label">Elevated</div>
-                        <div class="tier-sub">up to 2.5&times;</div>
+                        <div class="tier-sub">worth keeping an eye on</div>
                     </div>
                     <div class="tier-card tier-card--action">
                         <div class="tier-dot"></div>
                         <div class="tier-label">Action</div>
-                        <div class="tier-sub">&gt; 2.5&times;</div>
+                        <div class="tier-sub">investigate the source</div>
                     </div>
                 </div>
 
+                <h4 class="rad-section-title">Why does it change?</h4>
                 <div class="rad-explainer">
                     <div class="rad-explainer-row">
                         <span class="icon">&#9729;</span>
-                        <span><strong>Cosmic rays</strong> &mdash; more reach the surface in winter when the upper atmosphere is thinner.</span>
+                        <span>Cosmic rays hit harder in winter when the atmosphere above is thinner and less shielding.</span>
                     </div>
                     <div class="rad-explainer-row">
                         <span class="icon">&#8962;</span>
-                        <span><strong>Radon</strong> &mdash; builds up indoors in winter when buildings are sealed and ventilation drops.</span>
+                        <span>Radon gas seeps up from soil and collects indoors when buildings are sealed in cold weather.</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Sensor Modal -->
-    <div id="add-sensor-modal" class="overlay-modal hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>Add Sensor Station</h2>
-                <button onclick="closeAddSensorModal()" class="modal-close-btn">&#10005;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label class="form-label" for="new-sensor-name">Station Name</label>
-                    <input id="new-sensor-name" type="text" placeholder="e.g. Rooftop North Node" maxlength="40" class="form-input">
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="new-sensor-url">Page URL</label>
-                    <input id="new-sensor-url" type="text" placeholder="e.g. rooftop-north.html" class="form-input">
-                </div>
-                <div class="form-field">
-                    <label class="form-label">Status</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="new-sensor-status" value="online" checked>
-                            <span>Online</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="new-sensor-status" value="offline">
-                            <span>Offline</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="new-sensor-status" value="unknown">
-                            <span>Unknown</span>
-                        </label>
-                    </div>
-                </div>
-                <p id="add-sensor-error" class="form-error hidden">Please enter a station name.</p>
-                <div class="form-actions">
-                    <button onclick="closeAddSensorModal()" class="form-btn-cancel">Cancel</button>
-                    <button onclick="saveNewSensor()" class="form-btn-submit">Add Station</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="js/footer.js"></script>
     <script src="js/station-manager.js"></script>

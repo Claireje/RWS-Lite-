@@ -71,7 +71,8 @@ function toggleRadiationsMenu() {
     const submenu = document.getElementById('radiations-submenu');
     const chevron = document.getElementById('radiation-chevron');
     if (submenu) submenu.classList.toggle('hidden');
-    if (chevron) chevron.classList.toggle('rotate-180');
+    // collapsed = pointing down (closed), no class = pointing up (open)
+    if (chevron) chevron.classList.toggle('collapsed');
 }
 
 // Each station has its own config object so the rest of the script stays station-agnostic
@@ -88,7 +89,7 @@ const STATIONS_CONFIG = {
             radon:       { canvas: 'radonChart',    color: '#fb7185', label: 'Radon Concentration', dec: 2, unit: ' pCi/L', avgId: 'avg-radon' },
             temperature: { canvas: 'tempChart',     color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F',     avgId: 'avg-temp' },
             moisture:    { canvas: 'moistureChart', color: '#4ade80', label: 'Soil Moisture',        dec: 1, unit: '%',      avgId: 'avg-moisture' },
-            soiltemp:    { canvas: 'soiltempChart', color: '#fbbf24', label: 'Soil Temperature',     dec: 1, unit: '°F',    avgId: 'avg-soiltemp' }
+            soiltemp:    { canvas: 'soiltempChart', color: '#fbbf24', label: 'Soil Temperature',     dec: 1, unit: '°F',     avgId: 'avg-soiltemp' }
         },
         generateFallbackData: () => ({
             radon_level:      1.2  + (Math.random() * 0.4 - 0.2),
@@ -117,7 +118,7 @@ const STATIONS_CONFIG = {
             const radonStatusEl = document.getElementById('radon-status-text');
             if (radonStatusEl) {
                 radonStatusEl.textContent = radon >= 4.0 ? 'ACTION REQUIRED' : radon >= 2.0 ? 'Monitor' : 'Safe';
-                radonStatusEl.className   = radon >= 4.0 ? 'text-2xl font-black text-rose-400' : radon >= 2.0 ? 'text-2xl font-black text-amber-400' : 'text-2xl font-black text-[#22c55e]';
+                radonStatusEl.className   = radon >= 4.0 ? 'radon-status-action' : radon >= 2.0 ? 'radon-status-monitor' : 'radon-status-safe';
             }
             return { radon: sensor.radon_level, temperature: sensor.indoor_temp, moisture: sensor.soil_moisture, soiltemp: sensor.soil_temperature };
         }
@@ -131,10 +132,10 @@ const STATIONS_CONFIG = {
             history.solar[i]?.val?.toFixed(0) || ''
         ],
         metrics: {
-            temperature: { canvas: 'tempChart',  color: '#c084fc', label: 'Ambient Temp',    dec: 1, unit: '°F',  avgId: 'avg-temp' },
-            wind:        { canvas: 'windChart',  color: '#34d399', label: 'Wind Speed',       dec: 1, unit: ' mph', avgId: 'avg-wind' },
-            rainfall:    { canvas: 'rainChart',  color: '#60a5fa', label: 'Rainfall Volume',  dec: 3, unit: ' in',  avgId: 'avg-rain' },
-            solar:       { canvas: 'solarChart', color: '#facc15', label: 'Solar Density',    dec: 0, unit: ' lx',  avgId: 'avg-solar' }
+            temperature: { canvas: 'tempChart',  color: '#c084fc', label: 'Ambient Temp',    dec: 1, unit: '°F',   avgId: 'avg-temp' },
+            wind:        { canvas: 'windChart',  color: '#4ade80', label: 'Wind Speed',       dec: 1, unit: ' mph', avgId: 'avg-wind' },
+            rainfall:    { canvas: 'rainChart',  color: '#38bdf8', label: 'Rainfall Volume',  dec: 3, unit: ' in',  avgId: 'avg-rain' },
+            solar:       { canvas: 'solarChart', color: '#fbbf24', label: 'Solar Density',    dec: 0, unit: ' lx',  avgId: 'avg-solar' }
         },
         generateFallbackData: () => ({
             indoor_temp: 56.0 + (Math.random() * 2 - 1),
@@ -166,7 +167,7 @@ const STATIONS_CONFIG = {
         ],
         metrics: {
             temperature: { canvas: 'tempChart',       color: '#c084fc', label: 'Ambient Temperature', dec: 1, unit: '°F',    avgId: 'avg-temp' },
-            humidity:    { canvas: 'humidityChart',   color: '#22d3ee', label: 'Relative Humidity',   dec: 1, unit: '%',      avgId: 'avg-humidity' },
+            humidity:    { canvas: 'humidityChart',   color: '#38bdf8', label: 'Relative Humidity',   dec: 1, unit: '%',      avgId: 'avg-humidity' },
             radiation:   { canvas: 'radiationChart',  color: '#34d399', label: 'Ambient Radiation',   dec: 0, unit: ' nSv/h', avgId: 'avg-radiation' },
             pressure:    { canvas: 'pressureChart',   color: '#60a5fa', label: 'Barometric Pressure', dec: 1, unit: ' hPa',   avgId: 'avg-pressure' }
         },
@@ -260,9 +261,9 @@ async function fetchAndUpdate() {
                 if (history[key].length > MAX_PTS) history[key].shift();
             }
 
-            // recalculate and display the average below the chart
-            const vals = inst.data.datasets[0].data;
-            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+            // recalculate and display the average below the chart (filter out NaN before averaging)
+            const vals = inst.data.datasets[0].data.filter(v => !isNaN(v) && v !== null);
+            const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
             const avgEl = document.getElementById(m.avgId);
             if (avgEl) avgEl.textContent = avg.toFixed(m.dec);
 

@@ -1,6 +1,7 @@
-# RWS.py - Main sensor data collection script
-# Reads from all connected sensors and saves readings to the local SQLite database.
-# On Mac, runs in simulation mode with generated values instead of real hardware.
+# RWS.py
+# This is the main script that runs on the Raspberry Pi.
+# It reads from all the sensors and saves everything to a local SQLite database.
+# If you run it on a Mac it just generates fake data instead so you can test without the hardware.
 
 import sys
 import random
@@ -14,16 +15,14 @@ import importlib
 
 logging.basicConfig(level=logging.ERROR)
 
+# check if we're on a Mac so we know to skip the Pi-specific hardware stuff
 IS_MAC = sys.platform == "darwin"
-
-class MockAnalogIn:
-    def __init__(self, voltage=0.0):
-        self.voltage = voltage
 
 if IS_MAC:
     print("Mac detected: running in simulation mode")
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     try:
+        # these two have Python fallbacks so we can still try loading them
         UV_Module = importlib.import_module("sensors.UV")
         Wind_Module = importlib.import_module("sensors.WindDirection")
         print("Sensor modules loaded.")
@@ -32,6 +31,7 @@ if IS_MAC:
         UV_Module = None
         Wind_Module = None
 else:
+    # on the actual Pi, import all the real sensor drivers
     import board
     from adafruit_ads1x15.ads1115 import ADS1115
     from sensors.BME680 import BME680
@@ -43,13 +43,13 @@ else:
     from sensors.DIYgm import GeigerCounter
     from sensors.UV import UV
 
-PI_NUM = 1
-DATA_INTERVAL = 5  # seconds between readings
+PI_NUM = 1        # which Pi this is running on
+DATA_INTERVAL = 5 # how often to take a reading (seconds)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_FILE = os.path.abspath(os.path.join(BASE_DIR, 'data/sensorData.db'))
-verbose = True
 
 if not IS_MAC:
+    # connect to all the hardware
     i2c = board.I2C()
     ads = ADS1115(i2c)
     BME_Indoor = BME680(I2C=i2c, address=0x77)
@@ -63,6 +63,7 @@ if not IS_MAC:
 
 
 def init_db():
+    # make the data folder if it's not there yet, then create the table if it doesn't exist
     os.makedirs(os.path.dirname(DATABASE_FILE), exist_ok=True)
     conn = sqlite3.connect(DATABASE_FILE)
     conn.execute('''
@@ -82,6 +83,7 @@ def init_db():
 
 
 def get_time():
+    # always use Ann Arbor time
     return datetime.now(ZoneInfo("America/Detroit")).strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -97,6 +99,7 @@ def main():
             current_time = get_time()
 
             if IS_MAC:
+                # just make up some numbers that look realistic
                 i_temp = 56.0 + random.uniform(-1.0, 1.0)
                 i_humidity = 48.0 + random.uniform(-1.5, 1.5)
                 i_pressure, i_gas = 1013.25, 120.0
@@ -115,36 +118,46 @@ def main():
                 else:
                     uv = 0
 
+                # mostly dry, occasional small rain event
                 rainIN = random.choice([0.00, 0.00, 0.01, 0.00])
                 radon_level, geiger_cpm = 1.2, 14.0
                 lux = 450.0 + random.uniform(-30, 30)
             else:
+                # read from each sensor — if one fails just log -1 and keep going
+                # we don't want one broken sensor to crash the whole loop
                 try: i_temp, i_humidity, i_pressure, i_gas = BME_Indoor.read()
                 except: i_temp = i_humidity = i_pressure = i_gas = -1
+
                 try: _, percentage = soilMoist.read()
                 except: percentage = -1
+
                 try: temp = soilTemp.read()
                 except: temp = -1
-                try: mph, count, rainIN = windRain.read() if hasattr(windRain, 'read') else windRain.fullReadWind()
-                except: mph = count = rainIN = -1
+
+                try: mph, _, rainIN = windRain.read() if hasattr(windRain, 'read') else windRain.fullReadWind()
+                except: mph = rainIN = -1
+
                 try: direction = windDirection.read()
                 except: direction = "N/A"
+
                 try:
                     radonData = radon.read()
                     radon_level = radonData.get('radon', -1) if isinstance(radonData, dict) else -1
                 except: radon_level = -1
+
                 try:
                     geigerData = geiger.read()
                     geiger_cpm = geigerData.get('cpm', -1) if isinstance(geigerData, dict) else -1
                 except: geiger_cpm = -1
+
                 try: uv, lux = UVSensor.read()
                 except: uv = lux = -1
 
-            if verbose:
-                print(f"\n[{current_time}]")
-                print(f"  Temp: {i_temp:.1f}F | Wind: {mph:.2f} mph ({direction}) | UV: {uv}")
-                print(f"  Solar: {lux:.1f} lux | Rainfall: {rainIN:.2f} in")
+            print(f"\n[{current_time}]")
+            print(f"  Temp: {i_temp:.1f}F | Wind: {mph:.2f} mph ({direction}) | UV: {uv}")
+            print(f"  Solar: {lux:.1f} lux | Rainfall: {rainIN:.2f} in")
 
+            # save the reading to the database
             cursor.execute('''
                 INSERT INTO sensor_data
                 (pi_num, timestamp, indoor_temp, indoor_humidity, indoor_pressure, indoor_gas,

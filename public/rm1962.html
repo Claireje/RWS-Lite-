@@ -16,27 +16,23 @@
 <aside class="sidebar">
 
     <div class="sidebar-header">
-        <div class="sidebar-logo-badge">M</div>
-        <div>
-            <h1 class="sidebar-brand-name">RWS</h1>
-            <span class="sidebar-brand-sub">Research Weather</span>
-        </div>
+        <img src="../icon/rwsbiglogo.png" alt="RWS Logo" class="sidebar-logo-img">
     </div>
 
     <nav class="sidebar-nav">
         <p class="sidebar-section-label">Stations</p>
 
         <a href="index.html#overview" class="sidebar-link">
-            <span>📊</span> Overview
+            <img src="../icon/overview.png" alt="Overview" class="sidebar-nav-icon"> Overview
         </a>
         <a href="index.html#conditions" class="sidebar-link">
-            <span>🌤️</span> Current Conditions
+            <img src="../icon/currentcon.png" alt="Current Conditions" class="sidebar-nav-icon"> Current Conditions
         </a>
 
         <div class="sidebar-dropdown">
-            <button onclick="toggleRadiationsMenu()" class="sidebar-dropdown-toggle nav-active">
+            <button onclick="toggleRadiationsMenu()" class="sidebar-dropdown-toggle">
                 <span class="sidebar-dropdown-label">
-                    <span>☢️</span> Radiations
+                    <img src="../icon/radiation.png" alt="Radiations" class="sidebar-nav-icon"> Radiations
                 </span>
                 <svg id="radiation-chevron" class="sidebar-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
@@ -60,13 +56,13 @@
         </div>
 
         <a href="index.html#measures" class="sidebar-link">
-            <span>🌱</span> What we measure
+            <img src="../icon/measure.png" alt="What we measure" class="sidebar-nav-icon"> What we measure
         </a>
         <a href="index.html#news" class="sidebar-link">
-            <span>📰</span> News &amp; Updates
+            <img src="../icon/news.png" alt="News & Updates" class="sidebar-nav-icon"> News &amp; Updates
         </a>
         <a href="index.html#about" class="sidebar-link">
-            <span>ℹ️</span> About RWS
+            <img src="../icon/about.png" alt="About RWS" class="sidebar-nav-icon"> About RWS
         </a>
     </nav>
 
@@ -149,14 +145,14 @@
                         <h2>Sensor Data Logs</h2>
                         <p>Live from <code class="sensor-code">sensor_rm1962</code></p>
                     </div>
-                    <button onclick="downloadAllCombinedCSV()" class="export-btn">📦 Export CSV</button>
+                    <button onclick="downloadAllCombinedCSV()" class="export-btn">Export CSV</button>
                 </div>
 
                 <!-- Indoor Temperature -->
                 <div class="glass">
                     <div class="sensor-card-header">
                         <h3 class="sensor-title">
-                            🌡️ Indoor Temperature
+                            <img src="../icon/indoortemp.png" alt=""> Indoor Temperature
                             <code class="sensor-code">indoor_temp</code>
                         </h3>
                         <div class="sensor-avg-row">
@@ -174,7 +170,7 @@
                 <div class="glass">
                     <div class="sensor-card-header">
                         <h3 class="sensor-title">
-                            💧 Indoor Humidity
+                            <img src="../icon/indoorhumidity.png" alt=""> Indoor Humidity
                             <code class="sensor-code">indoor_humidity</code>
                         </h3>
                         <div class="sensor-avg-row">
@@ -192,7 +188,7 @@
                 <div class="glass">
                     <div class="sensor-card-header">
                         <h3 class="sensor-title">
-                            ☢️ Ambient Radiation
+                            <img src="../icon/HERO/boxicons_radiation.png" alt=""> Ambient Radiation
                             <code class="sensor-code">radon_level_nsv</code>
                         </h3>
                         <div class="sensor-avg-row">
@@ -210,7 +206,7 @@
                 <div class="glass">
                     <div class="sensor-card-header">
                         <h3 class="sensor-title">
-                            🔵 Air Pressure
+                            <img src="../icon/airpressure.png" alt=""> Air Pressure
                             <code class="sensor-code">indoor_pressure</code>
                         </h3>
                         <div class="sensor-avg-row">
