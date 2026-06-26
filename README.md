@@ -51,12 +51,6 @@ RWS.py       Main sensor loop, runs on the Pi
 
 ---
 
-## Sensor status (as of mid-2026)
-
-The Pi isn't actively pushing to MiServer right now so the dashboard is mostly on fallback data. RM1962 last pushed real data in May 2026. CS Facility stopped in March 2024. Basement never pushed successfully. Getting the Pi reconnected is the main thing left to fix.
-
----
-
 ## Running locally
 
 Just open `public/index.html` in a browser. It'll load with fallback data since there's no local API. If you want to test `RWS.py` on a Mac:
