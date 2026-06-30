@@ -710,10 +710,7 @@ body {
     to { transform: rotate(360deg); } 
 }
 
-.sun-rays { 
-    animation: spin-slow 12s linear infinite; 
-    transform-origin: center; 
-}
+.sun-rays { }
 
 @keyframes ping {
     75%, 100% { transform: scale(2); opacity: 0; }
