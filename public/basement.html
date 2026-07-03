@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<!-- ===================== SIDEBAR ===================== -->
+<!--  SIDEBAR  -->
 <aside class="sidebar">
 
     <div class="sidebar-header">
@@ -69,7 +69,7 @@
 </aside>
 
 
-<!-- ===================== MAIN CONTENT ===================== -->
+<!--  MAIN CONTENT  -->
 <div class="main-viewport">
 
     <header class="global-header">
@@ -158,7 +158,7 @@
                         </h3>
                         <div class="sensor-avg-row">
                             <span class="sensor-avg-text">Avg: <span id="avg-radon" class="avg-radon-val">—</span> pCi/L</span>
-                            <button onclick="openReportPopup('radon')" class="sensor-view-btn">📥 View Report</button>
+                            <button onclick="openReportPopup('radon')" class="sensor-view-btn">View Report</button>
                         </div>
                     </div>
                     <div class="chart-height-wrapper">
@@ -177,7 +177,7 @@
                         </h3>
                         <div class="sensor-avg-row">
                             <span class="sensor-avg-text">Avg: <span id="avg-temp" class="avg-temp-val">—</span> °F</span>
-                            <button onclick="openReportPopup('temperature')" class="sensor-view-btn">📥 View Report</button>
+                            <button onclick="openReportPopup('temperature')" class="sensor-view-btn">View Report</button>
                         </div>
                     </div>
                     <div class="chart-height-wrapper">
@@ -196,7 +196,7 @@
                         </h3>
                         <div class="sensor-avg-row">
                             <span class="sensor-avg-text">Avg: <span id="avg-moisture" class="avg-moisture-val">—</span> %</span>
-                            <button onclick="openReportPopup('moisture')" class="sensor-view-btn">📥 View Report</button>
+                            <button onclick="openReportPopup('moisture')" class="sensor-view-btn">View Report</button>
                         </div>
                     </div>
                     <div class="chart-height-wrapper">
@@ -215,7 +215,7 @@
                         </h3>
                         <div class="sensor-avg-row">
                             <span class="sensor-avg-text">Avg: <span id="avg-soiltemp" class="avg-soiltemp-val">—</span> °F</span>
-                            <button onclick="openReportPopup('soiltemp')" class="sensor-view-btn">📥 View Report</button>
+                            <button onclick="openReportPopup('soiltemp')" class="sensor-view-btn">View Report</button>
                         </div>
                     </div>
                     <div class="chart-height-wrapper">
@@ -289,12 +289,10 @@
 
     </main>
 
-    <global-footer></global-footer>
+    <div id="footer-placeholder"></div>
 
 </div>
-
-
-<!-- ===================== REPORT MODAL ===================== -->
+<!--  REPORT MODAL  -->
 <div id="report-modal" class="modal-backdrop hidden">
     <div class="pdf-window-frame">
 
@@ -374,8 +372,6 @@
         </div>
     </div>
 </div>
-
-
 <script src="js/footer.js"></script>
 <script src="js/station-manager.js" data-station="basement"></script>
 

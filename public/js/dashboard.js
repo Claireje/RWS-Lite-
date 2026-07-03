@@ -1,43 +1,28 @@
-// Seasonal radiation background ranges for Ann Arbor (nSv/h)
-// Based on EPA background levels and seasonal variation
-const RAD_SEASONS = {
-    winter: { label: 'Winter', months: [11, 0, 1],  low: 70,  high: 140 },
-    spring: { label: 'Spring', months: [2,  3, 4],  low: 60,  high: 120 },
-    summer: { label: 'Summer', months: [5,  6, 7],  low: 55,  high: 110 },
-    fall:   { label: 'Fall',   months: [8,  9, 10], low: 65,  high: 125 },
-};
-
-// figures out which season we're currently in based on the month
-function getCurrentSeason() {
-    const m = new Date().getMonth();
-    return Object.values(RAD_SEASONS).find(s => s.months.includes(m));
-}
-
-// returns a status label and color based on how the reading compares to the seasonal high
-function getRadiationStatus(nSvh) {
-    const s = getCurrentSeason();
-    if (nSvh <= s.high)        return { text: 'Normal',          color: '#22c55e', icon: '●', title: 'Safe range.',      body: `Within the expected ${s.label.toLowerCase()} background.` };
-    if (nSvh <= s.high * 1.5)  return { text: 'Monitor',         color: '#f59e0b', icon: '●', title: 'Worth watching.',  body: `Slightly above ${s.label.toLowerCase()} seasonal average.` };
-    if (nSvh <= s.high * 2.5)  return { text: 'Elevated',        color: '#f97316', icon: '▲', title: 'Elevated.',        body: `Notably above ${s.label.toLowerCase()} normal — monitor closely.` };
-    return                            { text: 'Action Required', color: '#ef4444', icon: '!', title: 'Investigate now.', body: 'Far above seasonal background — contact facilities.' };
-}
-
 // updates the clock in the top bar every second
 setInterval(() => {
     const el = document.getElementById('top-bar-clock');
     if (el) el.textContent = new Date().toLocaleTimeString();
 }, 1000);
 
-// sets the greeting text and date when the page loads
-(function() {
-    const h = new Date().getHours();
-    // pick the right greeting based on time of day
-    const g = h < 12 ? 'Good Morning!' : h < 17 ? 'Good Afternoon!' : 'Good Evening!';
-    const el = document.getElementById('greeting-text');
-    if (el) el.textContent = g;
-    const de = document.getElementById('greeting-date');
-    if (de) de.textContent = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-})();
+// shows a greeting ("Good Morning!" etc.) and today's date at the top of the page
+function setGreeting() {
+    const hour = new Date().getHours();
+    let greeting = 'Good Evening!';
+    if (hour < 12) greeting = 'Good Morning!';
+    else if (hour < 17) greeting = 'Good Afternoon!';
+
+    const greetingEl = document.getElementById('greeting-text');
+    if (greetingEl) greetingEl.textContent = greeting;
+
+    const dateEl = document.getElementById('greeting-date');
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+}
+
+setGreeting();
 
 // Three.js building visualization
 let scene, camera, renderer, controls, roofNode, indoorNode, basementNode, building;
@@ -106,13 +91,9 @@ function initThree() {
     grid.position.y = -6;
     scene.add(grid);
 
-    // animation loop — pulses the node auras in and out
-    let t = 0;
+    // render loop — keeps the camera controls responsive and the scene drawn
     (function animate() {
         requestAnimationFrame(animate);
-        t += 0.05;
-        const scale = 1 + Math.sin(t) * 0.25;
-        [roofNode, indoorNode, basementNode].forEach(n => n && n.scale.set(scale, scale, scale));
         controls.update();
         renderer.render(scene, camera);
     })();
@@ -158,6 +139,7 @@ function buildChart(key) {
         };
     }
 
+    //actual chart gets created, using Chart.js.
     cfg.chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -175,9 +157,11 @@ function buildChart(key) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            //what happens when you hover over the chart
             transitions: {
                 active: { animation: { duration: 400, easing: 'linear' } }
             },
+            //chart's legend and hover tooltip
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -192,10 +176,35 @@ function buildChart(key) {
                 },
                 ...annotationPlugin
             },
+            //This controls the two axes of the chart — the x-axis 
+            // (time, running left to right) and the y-axis (the value 
+            // being measured, running up and down).
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#334155', font: { size: 8 }, maxTicksLimit: 5, maxRotation: 0 }
+                    ticks: {
+                        maxTicksLimit: 5, maxRotation: 0,
+                        // "Now" is bigger + white so it stands out from the regular
+                        // gray timestamp labels
+                        color: (ctx) => ctx.tick.value === ctx.scale.getLabels().length - 1 ? '#ffffff' : '#334155',
+                        font: (ctx) => ctx.tick.value === ctx.scale.getLabels().length - 1
+                            ? { size: 11, weight: 'bold' }
+                            : { size: 8 },
+                        // tag the most recent point with "Now" but keep its timestamp too
+                        callback: function (value, index) {
+                            const isLast = index === this.getLabels().length - 1;
+                            const label = this.getLabelForValue(value);
+                            return isLast ? 'Now · ' + label : label;
+                        }
+                    },
+                    // autoSkip won't always land on the very last point -- force it to
+                    // stay in the tick list so "Now" is never skipped
+                    afterBuildTicks: (axis) => {
+                        const lastIndex = axis.getLabels().length - 1;
+                        if (lastIndex >= 0 && !axis.ticks.some(t => t.value === lastIndex)) {
+                            axis.ticks.push({ value: lastIndex });
+                        }
+                    }
                 },
                 y: {
                     grid: { color: 'rgba(30,41,59,0.4)' },
@@ -214,11 +223,33 @@ function initAllCharts() {
 // fetches the latest sensor reading and pushes it into each chart
 // falls back to simulated values if the API is unreachable
 async function updateLiveChart() {
+    // try to get the real reading; if that fails for any reason,
+    // quietly fake a believable one instead so the dashboard
+    // never looks broken to whoever's looking at it.
     let sensor;
     try {
-        const res = await fetch('https://dev-engin-rws.pantheonsite.io/wp-json/rws/v1/sensors');
-        const payload = await res.json();
-        sensor = payload.data;
+        // live-data.php only returns one station at a time, and the six
+        // metrics shown here live on different physical stations -- so
+        // pull RM 1962 (indoor temp/humidity/radiation/radon) and the
+        // CS Facility roof (wind/rain/solar) and merge them into one
+        // reading for the homepage overview
+        const [roomRes, roofRes] = await Promise.all([
+            fetch('https://dev-engin-rws.pantheonsite.io/live-data.php?station=rm1962'),
+            fetch('https://dev-engin-rws.pantheonsite.io/live-data.php?station=cs-facility'),
+        ]);
+        const room = (await roomRes.json()).data;
+        const roof = (await roofRes.json()).data;
+        if (!room || !roof) throw new Error('no data returned from live-data.php');
+
+        sensor = {
+            indoor_temp:     room.indoor_temp,
+            indoor_humidity: room.indoor_humidity,
+            radiation:       room.radiation,
+            radon_level:     room.radon_level,
+            wind_speed:      roof.wind_speed,
+            rainfall:        roof.rainfall,
+            lux:             roof.lux,
+        };
     } catch(e) {
         // API is down or sensors aren't pushing — generate fake data so the charts still show something
         console.warn('Sensor fetch failed, using fallback data:', e);
@@ -230,10 +261,8 @@ async function updateLiveChart() {
             radiation:       82 + (Math.random() * 6 - 3),
             radon_level:     1.2 + (Math.random() * 0.4 - 0.2),
             lux:             440 + (Math.random() * 40 - 20),
-            timestamp:       new Date().toISOString()
         };
     }
-
     if (!sensor) return;
 
     // helper to safely update a DOM element with a rounded number
@@ -242,7 +271,8 @@ async function updateLiveChart() {
         if (el && val != null) el.textContent = Number(val).toFixed(dec);
     };
 
-    // map sensor fields to chart keys
+    // renames the sensor's field names into 
+    // the shorter names the charts use internally.
     const incoming = {
         temp:     sensor.indoor_temp,
         humidity: sensor.indoor_humidity,
@@ -261,46 +291,21 @@ async function updateLiveChart() {
     setEl('current-radon',    incoming.radon,    2);
     setEl('nav-temp',         sensor.indoor_temp, 0);
 
-    // figure out the radiation status and update the shield card
-    const rad    = sensor.radiation ?? 82;
-    const season = getCurrentSeason();
-    const status = getRadiationStatus(rad);
+    // just show the raw radiation number for now -- the status/color
+    // logic (normal vs elevated, etc.) isn't wired up yet. the green
+    // "Normal" state, shield color, and info text are static placeholders
+    // set directly in index.html until that's built.
+    const rad = sensor.radiation ?? 82;
     setEl('current-rad', rad, 0);
-
-    const radStatusEl = document.getElementById('rad-status-text');
-    if (radStatusEl) {
-        radStatusEl.textContent = status.text;
-        radStatusEl.style.color = status.color;
-    }
-
-    // show the seasonal normal range below the status
-    const radRangeEl = document.getElementById('rad-range-text');
-    if (radRangeEl) radRangeEl.textContent = `${season.label} normal: ${season.low}–${season.high} nSv/h`;
-
-    // color the shield border and glow based on the current status
-    const shieldEl   = document.getElementById('rad-shield');
-    const shieldIcon = document.getElementById('rad-shield-icon');
-    if (shieldEl) {
-        shieldEl.style.borderColor = status.color + '99';
-        shieldEl.style.boxShadow   = `0 0 15px ${status.color}33`;
-    }
-    if (shieldIcon) shieldIcon.style.color = status.color;
-
-    // update the info box below the shield with a short explanation
-    const infoBox   = document.getElementById('rad-info-box');
-    const infoIcon  = document.getElementById('rad-info-icon');
-    const infoTitle = document.getElementById('rad-info-title');
-    const infoText  = document.getElementById('rad-info-text');
-    if (infoBox)   infoBox.style.borderColor = status.color + '33';
-    if (infoIcon)  infoIcon.textContent      = status.icon;
-    if (infoTitle) infoTitle.textContent     = status.title;
-    if (infoText)  infoText.textContent      = status.body;
 
     setEl('weather-temp',  sensor.indoor_temp, 0);
     setEl('weather-feels', sensor.indoor_temp, 0);
 
-    const ts = new Date(sensor.timestamp || new Date())
-        .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    // use the browser's own clock for the chart label rather than the
+    // server's raw timestamp field -- the rm1962 station's "time" column
+    // isn't always a full date (sometimes just HH:MM:SS), which JS can't
+    // parse and used to show up on the chart as "Invalid Date"
+    const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // push the new reading into each chart and drop the oldest point if we're over the limit
     Object.entries(incoming).forEach(([key, val]) => {
